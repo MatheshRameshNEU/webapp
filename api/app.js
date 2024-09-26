@@ -18,8 +18,7 @@ const db = new Sequelize(process.env.DB_NAME,process.env.DB_USERNAME,process.env
 const initialize = (app) => {
   app.use(express.json());
   app.get("/healthz", (req, res) => {
-
-    if (Object.keys(req.query).length !== 0) {
+    if (Object.keys(req.query).length !== 0 || (req.body && Object.keys(req.body).length !== 0)) {
       return res.status(400).send();
     }
 
