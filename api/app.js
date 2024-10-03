@@ -95,6 +95,10 @@ const initialize = async (app) => {
         return res.status(400).send();
       }
 
+      if (email.trim() === "" || password.trim() === "" || firstName.trim() === "" || lastName.trim() === "") {
+        return res.status(400).send();
+      }
+
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({
@@ -131,7 +135,19 @@ const initialize = async (app) => {
 
       const { email, firstName, lastName, password } = req.body;
 
-      // Check for unexpected fields in the request body
+      if (email !== undefined && email.trim() === "") {
+        return res.status(400).send();
+      }
+      if (password !== undefined && password.trim() === "") {
+        return res.status(400).send();
+      }
+      if (firstName !== undefined && firstName.trim() === "") {
+        return res.status(400).send();
+      }
+      if (lastName !== undefined && lastName.trim() === "") {
+        return res.status(400).send();
+      }
+
       const allowedFields = ["email", "firstName", "lastName", "password"];
       const providedFields = Object.keys(req.body);
 
@@ -140,10 +156,10 @@ const initialize = async (app) => {
       );
 
       if (hasInvalidFields) {
-        return res.status(400).json(); // Return 400 Bad Request if invalid fields are present
+        return res.status(400).json(); 
       }
 
-      // Check if the email in the request body matches the authenticated user's email
+      
       if (email && email !== req.user.email) {
         return res.status(400).json();
       }
@@ -158,6 +174,7 @@ const initialize = async (app) => {
         await req.user.update(updates);
 
         return res.status(200).json({
+          id:req.user.id,
           email: req.user.email,
           firstName: req.user.firstName,
           lastName: req.user.lastName,
