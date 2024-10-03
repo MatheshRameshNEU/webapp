@@ -1,6 +1,6 @@
 # Webapp
 
-This is a simple Node.js web application built with Express, Sequelize, and PostgreSQL, designed for cloud deployment.
+This is a simple Node.js web application built with Express, Sequelize, and PostgreSQL, designed for cloud deployment. he application connects to a PostgreSQL database and includes features such as user authentication, API endpoints, and a health check.
 
 ## Prerequisites
 
@@ -62,6 +62,15 @@ This project uses the `dotenv` package to manage environment variables. Create a
 - `pg`: PostgreSQL client for Node.js
 - `pg-hstore`: A library to serialize and deserialize JSON data in PostgreSQL
 - `sequelize`: A promise-based Node.js ORM for PostgreSQL
+
+## API Endpoints
+
+Health Check
+GET /healthz: Returns 200 OK if the application and database are healthy.
+User Management
+POST /v1/user: Creates a new user with the provided email, password, first name, and last name.
+PUT /v1/user/self: Updates the authenticated user’s profile (first name, last name, and password).
+GET /v1/user/self: Retrieves the authenticated user’s profile.
 
 ## Author
 
