@@ -14,7 +14,6 @@ const authMiddleware = (User) => {
 
     try {
       const user = await User.findOne({ where: { email } });
-      console.log("printing user ", user );
       if (!user) {
         return res.status(401).json();
       }

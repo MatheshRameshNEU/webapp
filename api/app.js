@@ -55,11 +55,11 @@ const initialize = async (app) => {
     console.log("Database synced successfully.");
 
     // Health check endpoint
-    app.get("/healthz", (req, res) => {
-      console.log("Health check endpoint");
+    app.all("/healthz",(req, res) => {
       if (req.method !== "GET") {
         return res.status(405).send();
       }
+      
 
       if (Object.keys(req.query).length !== 0 || (req.body && Object.keys(req.body).length !== 0)) {
         return res.status(400).send();
@@ -75,13 +75,6 @@ const initialize = async (app) => {
         });
     });
 
-  // Blocking non-GET requests to /healthz
-    app.all("/healthz", (req, res) => {
-      if (req.method !== "GET") {
-        console.log("Health check endpoint inside if");
-        return res.status(405).send().json();
-      }
-    });
     //creating user profile
     app.post("/v1/user", async (req, res) => {
       const { email, password, firstName, lastName } = req.body;
@@ -103,6 +96,7 @@ const initialize = async (app) => {
         });
 
         return res.status(201).json({
+          id:newUser.id,
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName,
