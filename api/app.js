@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
@@ -14,7 +15,7 @@ const db = new Sequelize(
   {
     host: "localhost",
     port: process.env.DB_PORT || 5432,
-    dialect: "postgres", 
+    dialect: "postgres",
   }
 );
 
@@ -23,14 +24,21 @@ const authMiddleware = require("./middlewares/auth")(User);
 
 // initialize Express app
 const initialize = async (app) => {
+  app.use(
+    cors({
+      origin: "*", 
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"], 
+    })
+  );
+
   app.use((req, res, next) => {
     // Setting global headers
     res.set({
       "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Pragma": "no-cache",
-      "X-Content-Type-Options": "nosniff"
+      Pragma: "no-cache",
+      "X-Content-Type-Options": "nosniff",
     });
-  
+
     next();
   });
 
@@ -47,21 +55,22 @@ const initialize = async (app) => {
         }
       },
     })
-  )
- 
+  );
 
   try {
     await db.sync();
     console.log("Database synced successfully.");
 
     // Health check endpoint
-    app.all("/healthz",(req, res) => {
+    app.all("/healthz", (req, res) => {
       if (req.method !== "GET") {
         return res.status(405).send();
       }
-      
 
-      if (Object.keys(req.query).length !== 0 || (req.body && Object.keys(req.body).length !== 0)) {
+      if (
+        Object.keys(req.query).length !== 0 ||
+        (req.body && Object.keys(req.body).length !== 0)
+      ) {
         return res.status(400).send();
       }
 
@@ -96,7 +105,7 @@ const initialize = async (app) => {
         });
 
         return res.status(201).json({
-          id:newUser.id,
+          id: newUser.id,
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName,
@@ -104,12 +113,14 @@ const initialize = async (app) => {
           account_updated: newUser.account_updated,
         });
       } catch (error) {
-
-        if (error.name === "SequelizeUniqueConstraintError" || error.name === "SequelizeValidationError") {
-          return res.status(400).json(); 
+        if (
+          error.name === "SequelizeUniqueConstraintError" ||
+          error.name === "SequelizeValidationError"
+        ) {
+          return res.status(400).json();
         }
 
-        return res.status(400).json(); 
+        return res.status(400).json();
       }
     });
     // updating user profile
@@ -117,35 +128,35 @@ const initialize = async (app) => {
       if (Object.keys(req.query).length !== 0) {
         return res.status(400).send();
       }
-    
+
       const { email, firstName, lastName, password } = req.body;
-    
+
       // Check for unexpected fields in the request body
       const allowedFields = ["email", "firstName", "lastName", "password"];
       const providedFields = Object.keys(req.body);
-    
+
       const hasInvalidFields = providedFields.some(
         (field) => !allowedFields.includes(field)
       );
-    
+
       if (hasInvalidFields) {
         return res.status(400).json(); // Return 400 Bad Request if invalid fields are present
       }
-    
+
       // Check if the email in the request body matches the authenticated user's email
       if (email && email !== req.user.email) {
         return res.status(400).json();
       }
-    
+
       try {
         const updates = {};
-    
+
         if (firstName) updates.firstName = firstName;
         if (lastName) updates.lastName = lastName;
         if (password) updates.password = await bcrypt.hash(password, 10); // Hash the new password
-    
+
         await req.user.update(updates);
-    
+
         return res.status(200).json({
           email: req.user.email,
           firstName: req.user.firstName,
@@ -154,16 +165,19 @@ const initialize = async (app) => {
         });
       } catch (error) {
         console.error("Error updating user:", error);
-        return res.status(400).json(); 
+        return res.status(400).json();
       }
     });
-    
+
     // geeting user profile
     app.get("/v1/user/self", authMiddleware, async (req, res) => {
       if (req.method !== "GET") {
         return res.status(405).send();
       }
-      if (Object.keys(req.query).length !== 0 || (req.body && Object.keys(req.body).length !== 0)) {
+      if (
+        Object.keys(req.query).length !== 0 ||
+        (req.body && Object.keys(req.body).length !== 0)
+      ) {
         return res.status(400).send();
       }
       try {
@@ -181,7 +195,7 @@ const initialize = async (app) => {
     });
     //non exist method for user/self
     app.all("/v1/user/self", (req, res) => {
-        return res.status(405).send();
+      return res.status(405).send();
     });
 
     // Handle 404s for unknown routes
