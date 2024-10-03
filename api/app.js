@@ -1,61 +1,202 @@
 const express = require("express");
-
 const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
+const bcrypt = require("bcrypt");
 
-// Load environment variables from .env file
+// Load env var from .env file
 dotenv.config();
 
-// Connect to Sequelize DB
-const db = new Sequelize(process.env.DB_NAME,process.env.DB_USERNAME,process.env.DB_PASSWORD, {
-  host: "localhost",
-  port: process.env.DB_PORT || 5432,
-  dialect: "postgres",
-});
+// Connect to databse
+const db = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USERNAME,
+  process.env.DB_PASSWORD,
+  {
+    host: "localhost",
+    port: process.env.DB_PORT || 5432,
+    dialect: "postgres", 
+  }
+);
 
+const User = require("./models/user")(db);
+const authMiddleware = require("./middlewares/auth")(User);
 
-// Function to initialize Express app
-const initialize = (app) => {
-  app.use(express.json());
-  app.get("/healthz", (req, res) => {
-    if (Object.keys(req.query).length !== 0 || (req.body && Object.keys(req.body).length !== 0)) {
-      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-      res.set("Pragma", "no-cache");
-      res.set("X-Content-Type-Options", "nosniff");
-      return res.status(400).send();
-    }
-
-    db.authenticate()
-      .then(() => {
-        console.log("Connection has been established successfully.");
-        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.set("Pragma", "no-cache");
-        res.set("X-Content-Type-Options", "nosniff");
-        return res.status(200).send();
-      })
-      .catch((error) => {
-        console.error("Unable to connect to the database:", error);
-        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.set("Pragma", "no-cache");
-        res.set("X-Content-Type-Options", "nosniff");
-        return res.status(503).send();
-      });
+// initialize Express app
+const initialize = async (app) => {
+  app.use((req, res, next) => {
+    // Setting global headers
+    res.set({
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Pragma": "no-cache",
+      "X-Content-Type-Options": "nosniff"
+    });
+  
+    next();
   });
 
-  app.all("/healthz", (req, res) => {
-    if (req.method !== "GET") {
-      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-      res.set("Pragma", "no-cache");
-      res.set("X-Content-Type-Options", "nosniff");
-      return res.status(405).send();
-    }
-  });
-  app.use((req, res) => {
-    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-      res.set("Pragma", "no-cache");
-      res.set("X-Content-Type-Options", "nosniff");
+  app.use(
+    express.json({
+      strict: true,
+      verify: (req, res, buf, encoding) => {
+        try {
+          if (buf && buf.length) {
+            JSON.parse(buf);
+          }
+        } catch (err) {
+          return res.status(400).json();
+        }
+      },
+    })
+  )
+ 
+
+  try {
+    await db.sync();
+    console.log("Database synced successfully.");
+
+    // Health check endpoint
+    app.get("/healthz", (req, res) => {
+      console.log("Health check endpoint");
+      if (req.method !== "GET") {
+        return res.status(405).send();
+      }
+
+      if (Object.keys(req.query).length !== 0 || (req.body && Object.keys(req.body).length !== 0)) {
+        return res.status(400).send();
+      }
+
+      db.authenticate()
+        .then(() => {
+          return res.status(200).send();
+        })
+        .catch((error) => {
+          console.error("Unable to connect to the database:", error);
+          return res.status(503).send();
+        });
+    });
+
+  // Blocking non-GET requests to /healthz
+    app.all("/healthz", (req, res) => {
+      if (req.method !== "GET") {
+        console.log("Health check endpoint inside if");
+        return res.status(405).send().json();
+      }
+    });
+    //creating user profile
+    app.post("/v1/user", async (req, res) => {
+      const { email, password, firstName, lastName } = req.body;
+      if (Object.keys(req.query).length !== 0) {
+        return res.status(400).send();
+      }
+
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).send();
+      }
+
+      try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({
+          email,
+          password: hashedPassword,
+          firstName,
+          lastName,
+        });
+
+        return res.status(201).json({
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          account_created: newUser.account_created,
+          account_updated: newUser.account_updated,
+        });
+      } catch (error) {
+
+        if (error.name === "SequelizeUniqueConstraintError" || error.name === "SequelizeValidationError") {
+          return res.status(400).json(); 
+        }
+
+        return res.status(400).json(); 
+      }
+    });
+    // updating user profile
+    app.put("/v1/user/self", authMiddleware, async (req, res) => {
+      if (Object.keys(req.query).length !== 0) {
+        return res.status(400).send();
+      }
+    
+      const { email, firstName, lastName, password } = req.body;
+    
+      // Check for unexpected fields in the request body
+      const allowedFields = ["email", "firstName", "lastName", "password"];
+      const providedFields = Object.keys(req.body);
+    
+      const hasInvalidFields = providedFields.some(
+        (field) => !allowedFields.includes(field)
+      );
+    
+      if (hasInvalidFields) {
+        return res.status(400).json(); // Return 400 Bad Request if invalid fields are present
+      }
+    
+      // Check if the email in the request body matches the authenticated user's email
+      if (email && email !== req.user.email) {
+        return res.status(400).json();
+      }
+    
+      try {
+        const updates = {};
+    
+        if (firstName) updates.firstName = firstName;
+        if (lastName) updates.lastName = lastName;
+        if (password) updates.password = await bcrypt.hash(password, 10); // Hash the new password
+    
+        await req.user.update(updates);
+    
+        return res.status(200).json({
+          email: req.user.email,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName,
+          account_updated: req.user.account_updated,
+        });
+      } catch (error) {
+        console.error("Error updating user:", error);
+        return res.status(400).json(); 
+      }
+    });
+    
+    // geeting user profile
+    app.get("/v1/user/self", authMiddleware, async (req, res) => {
+      if (req.method !== "GET") {
+        return res.status(405).send();
+      }
+      if (Object.keys(req.query).length !== 0 || (req.body && Object.keys(req.body).length !== 0)) {
+        return res.status(400).send();
+      }
+      try {
+        return res.status(200).json({
+          id: req.user.id,
+          email: req.user.email,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName,
+          account_created: req.user.account_created,
+          account_updated: req.user.account_updated,
+        });
+      } catch (error) {
+        return res.status(400).json();
+      }
+    });
+    //non exist method for user/self
+    app.all("/v1/user/self", (req, res) => {
+        return res.status(405).send();
+    });
+
+    // Handle 404s for unknown routes
+    app.use((req, res) => {
       return res.status(404).send();
-  });
+    });
+  } catch (err) {
+    console.error("Failed to sync database:", err);
+  }
 };
 
 module.exports = initialize;
