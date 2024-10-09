@@ -44,8 +44,12 @@ describe("GET /v1/user/self", () => {
 
   it("should return 200 and user details if valid credentials are provided", async () => {
     // Create a test user
+    console.log('NEW_USER_PASSWORD:', process.env.NEW_USER_PASSWORD);
+console.log('TEST_USER_PASSWORD:', process.env.TEST_USER_PASSWORD);
+
     const testUser = await User.create({
       email: process.env.TEST_USER_EMAIL,
+      
       password: await bcrypt.hash(process.env.TEST_USER_PASSWORD, 10),
       firstName: process.env.TEST_USER_FIRST_NAME,
       lastName: process.env.TEST_USER_LAST_NAME,
