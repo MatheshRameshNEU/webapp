@@ -45,7 +45,6 @@ jobs:
       # Step 5: Install dependencies
       - name: Install dependencies
         run: npm install
-      
 
       # Step 6: Run tests with environment variables
       - name: Run tests
@@ -53,7 +52,28 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          DB_PORT: 5432
+          DB_PORT: ${{ secrets.DB_PORT }}
 
+          # Test user credentials
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          
+          # New user credentials
+          NEW_USER_EMAIL: ${{ secrets.NEW_USER_EMAIL }}
+          NEW_USER_PASSWORD: ${{ secrets.NEW_USER_PASSWORD }}
+          
+          # Duplicate user email
+          DUPLICATE_USER_EMAIL: ${{ secrets.DUPLICATE_USER_EMAIL }}
+          
+          # User first and last names
+          TEST_USER_FIRST_NAME: ${{ secrets.TEST_USER_FIRST_NAME }}
+          TEST_USER_LAST_NAME: ${{ secrets.TEST_USER_LAST_NAME }}
+          NEW_USER_FIRST_NAME: ${{ secrets.NEW_USER_FIRST_NAME }}
+
+          # Updated user data for PUT tests
+          UPDATED_USER_FIRST_NAME: ${{ secrets.UPDATED_USER_FIRST_NAME }}
+          UPDATED_USER_LAST_NAME: ${{ secrets.UPDATED_USER_LAST_NAME }}
+          UPDATED_USER_PASSWORD: ${{ secrets.UPDATED_USER_PASSWORD }}
+          
         run: |
           npm test
