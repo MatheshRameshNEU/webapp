@@ -12,39 +12,46 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_USER: ${{ secrets.DB_USERNAME }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.DB_NAME }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U ${{ secrets.DB_USERNAME }}" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=5
-
     steps:
+      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'
 
+      # Step 3: Start PostgreSQL using Docker
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name postgres \
+            -e POSTGRES_USER=${{ secrets.DB_USERNAME }} \
+            -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e POSTGRES_DB=${{ secrets.DB_NAME }} \
+            -p 5432:5432 \
+            postgres:12
+          
+      # Step 4: Wait for PostgreSQL to be ready
+      - name: Wait for PostgreSQL
+        run: |
+          until docker exec postgres pg_isready -U ${{ secrets.DB_USERNAME }}; do
+            echo "Waiting for postgres...";
+            sleep 5;
+          done
+
+      # Step 5: Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # Step 6: Run tests with environment variables
       - name: Run tests
         env:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_PORT: 5432
         run: |
-          npx sequelize-cli db:migrate
           npm test
