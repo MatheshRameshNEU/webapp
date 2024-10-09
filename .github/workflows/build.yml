@@ -45,6 +45,7 @@ jobs:
       # Step 5: Install dependencies
       - name: Install dependencies
         run: npm install
+      
 
       # Step 6: Run tests with environment variables
       - name: Run tests
@@ -53,5 +54,6 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_PORT: 5432
+
         run: |
           npm test
