@@ -1,6 +1,6 @@
 # Webapp
 
-This is a simple Node.js web application built with Express, Sequelize, and PostgreSQL, designed for cloud deployment. he application connects to a PostgreSQL database and includes features such as user authentication, API endpoints, and a health check.
+This is a simple Node.js web application built with Express, Sequelize, and PostgreSQL, designed for cloud deployment. he application connects to a PostgreSQL database and includes features such as user authentication, API endpoints, and a health check..
 
 ## Prerequisites
 
