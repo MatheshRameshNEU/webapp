@@ -37,7 +37,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await User.destroy({ where: {} }); // Clear the User table before each test
+  await User.destroy({ where: {} });
 });
 
 describe("GET /v1/user/self", () => {
@@ -46,6 +46,7 @@ describe("GET /v1/user/self", () => {
     // Create a test user
     console.log('NEW_USER_PASSWORD:', process.env.NEW_USER_PASSWORD);
 console.log('TEST_USER_PASSWORD:', process.env.TEST_USER_PASSWORD);
+console.log('NEW_USER_PASSWORD:', process.env.TEST_USER_EMAIL);
 
     const testUser = await User.create({
       email: process.env.TEST_USER_EMAIL,
