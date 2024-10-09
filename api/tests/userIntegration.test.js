@@ -37,7 +37,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await User.destroy({ where: {} }); // Clear the User table before each test
+  await User.destroy({ where: {} });
 });
 
 describe("GET /v1/user/self", () => {
