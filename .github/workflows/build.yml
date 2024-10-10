@@ -31,7 +31,7 @@ jobs:
             -e POSTGRES_USER=${{ secrets.DB_USERNAME }} \
             -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e POSTGRES_DB=${{ secrets.DB_NAME }} \
-            -p 5432:5432 \
+            -p ${{ secrets.DB_PORT }}:5432 \
             postgres:12
           
       # Step 4: Wait for PostgreSQL to be ready
