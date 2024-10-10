@@ -70,7 +70,7 @@ GET /healthz: Returns 200 OK if the application and database are healthy.
 User Management
 POST /v1/user: Creates a new user with the provided email, password, first name, and last name.
 PUT /v1/user/self: Updates the authenticated user’s profile (first name, last name, and password).
-GET /v1/user/self: Retrieves the authenticated user’s profile.
+GET /v1/user/self: Retrieves the authenticated user’s profile .
 
 ## Author
 
