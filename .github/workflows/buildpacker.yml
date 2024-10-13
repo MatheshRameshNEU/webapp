@@ -32,4 +32,4 @@ jobs:
 
       - name: Validate Packer Template
         run: |
-          packer validate packer/packer.pkr.hcl
+         packer validate -var-file=packer/variables.pkrvars.hcl packer/packer.pkr.hcl
