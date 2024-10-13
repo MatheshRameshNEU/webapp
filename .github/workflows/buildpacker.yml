@@ -23,11 +23,13 @@ jobs:
         with:
           version: "latest"
 
+      - name: Initialize Packer
+        run: packer init packer
       
       - name: Check Packer Formatting
         run: |
-          packer fmt -check .
+          packer fmt --check packer/packer.pkr.hcl
 
       - name: Validate Packer Template
         run: |
-          packer validate .
+          packer validate packer/packer.pkr.hcl
