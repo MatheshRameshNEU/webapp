@@ -1,0 +1,35 @@
+name: Packer CI Workflow
+
+on:
+  pull_request:
+    types:
+      - opened
+    branches:
+      - main
+
+jobs:
+  packer-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: "latest"
+
+      - name: Initialize Packer
+        run: packer init packer
+      
+      - name: Check Packer Formatting
+        run: |
+          packer fmt --check packer/packer.pkr.hcl
+
+      - name: Validate Packer Template
+        run: |
+         packer validate -var-file=packer/variables.pkrvars.hcl packer/packer.pkr.hcl
