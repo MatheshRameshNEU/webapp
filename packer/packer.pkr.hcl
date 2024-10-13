@@ -64,7 +64,7 @@ build {
 
 
   provisioner "shell" {
-    script = "install.sh"
+    script = "packer/install.sh"
   }
 }
 
