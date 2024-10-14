@@ -31,22 +31,21 @@ echo "permission change "
 # Set the correct ownership of the app directory
 sudo chown -R csye6225:csye6225 /home/csye6225/app
 
-echo "PORT_test: ${port}"
-echo "DB_PORT: ${db_port}"
+echo "PORT_test: $PORT"
+echo "DB_PORT: $DB_PORT"
 
 
 # Create the .env file dynamically using the Packer variables
 
 echo "env create  "
 sudo bash -c "cat > /home/csye6225/app/.env << EOF
-PORT=${port}
-DB_PORT=${db_port}
-DB_NAME=${db_name}
-DB_USERNAME=${db_username}
-DB_PASSWORD=${db_password}
-TEST_PORT=${db_name}  # Modify this if it's different from DB_NAME
+PORT=$PORT
+DB_PORT=$DB_PORT
+DB_NAME=$DB_NAME
+DB_USERNAME=$DB_USERNAME
+DB_PASSWORD=$DB_PASSWORD
 EOF"
-Set ownership of the .env file
+# Set ownership of the .env file
 
 # sudo bash -c "cat > /home/csye6225/app/.env << EOF
 # PORT = 8082 
