@@ -114,6 +114,7 @@ jobs:
             -var "db_name=${{ secrets.DB_NAME }}" \
             -var "db_port=${{ secrets.DB_PORT }}" \
             -var "port=${{ secrets.PORT }}" \
+            -var-file=packer/variables.pkrvars.hcl \
             packer/packer.pkr.hcl
 
 
