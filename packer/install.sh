@@ -38,15 +38,24 @@ echo "DB_PORT: ${db_port}"
 # Create the .env file dynamically using the Packer variables
 
 echo "env create  "
-sudo bash -c "cat > /home/csye6225/app/.env << EOF
-PORT=${port}
-DB_PORT=${db_port}
-DB_NAME=${db_name}
-DB_USERNAME=${db_username}
-DB_PASSWORD=${db_password}
-TEST_PORT=${db_name}  # Modify this if it's different from DB_NAME
-EOF"
+# sudo bash -c "cat > /home/csye6225/app/.env << EOF
+# PORT=${port}
+# DB_PORT=${db_port}
+# DB_NAME=${db_name}
+# DB_USERNAME=${db_username}
+# DB_PASSWORD=${db_password}
+# TEST_PORT=${db_name}  # Modify this if it's different from DB_NAME
+# EOF"
 # Set ownership of the .env file
+
+sudo bash -c "cat > /home/csye6225/app/.env << EOF
+PORT = 8082 
+DB_PORT = 5432
+DB_NAME = postgres
+DB_USERNAME = postgres
+DB_PASSWORD = Welcome@1
+TEST_PORT = 3000  # Modify this if it's different from DB_NAME
+EOF"
 echo "permission change two"
 sudo chown csye6225:csye6225 /home/csye6225/app/.env
 
