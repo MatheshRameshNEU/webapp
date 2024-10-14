@@ -1,0 +1,126 @@
+name: Packer Build CI Workflow
+
+on:
+  pull_request:
+    types:
+      - closed  
+    branches:
+      - main
+
+jobs:
+  build-image:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true 
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # Change region if needed
+
+  
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: "latest"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name postgres \
+            -e POSTGRES_USER=${{ secrets.DB_USERNAME }} \
+            -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e POSTGRES_DB=${{ secrets.DB_NAME }} \
+            -p ${{ secrets.DB_PORT }}:5432 \
+            postgres:12
+          
+      - name: Wait for PostgreSQL
+        run: |
+          until docker exec postgres pg_isready -U ${{ secrets.DB_USERNAME }}; do
+            echo "Waiting for postgres...";
+            sleep 5;
+          done
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        env:
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+
+          # Test user credentials
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          
+          # New user credentials
+          NEW_USER_EMAIL: ${{ secrets.NEW_USER_EMAIL }}
+          NEW_USER_PASSWORD: ${{ secrets.NEW_USER_PASSWORD }}
+          
+          # Duplicate user email
+          DUPLICATE_USER_EMAIL: ${{ secrets.DUPLICATE_USER_EMAIL }}
+          
+          # User first and last names
+          TEST_USER_FIRST_NAME: ${{ secrets.TEST_USER_FIRST_NAME }}
+          TEST_USER_LAST_NAME: ${{ secrets.TEST_USER_LAST_NAME }}
+          NEW_USER_FIRST_NAME: ${{ secrets.NEW_USER_FIRST_NAME }}
+
+          # Updated user data for PUT tests
+          UPDATED_USER_FIRST_NAME: ${{ secrets.UPDATED_USER_FIRST_NAME }}
+          UPDATED_USER_LAST_NAME: ${{ secrets.UPDATED_USER_LAST_NAME }}
+          UPDATED_USER_PASSWORD: ${{ secrets.UPDATED_USER_PASSWORD }}
+          
+        run: |
+          npm test
+
+      - name: Build Application Artifact
+        run: |
+          npm install 
+          zip -r app.zip *
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-artifact
+          path: app.zip
+
+      - name: Download App Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: app.zip
+
+
+      - name: Build Packer Image
+        run: |
+            packer init packer/packer.pkr.hcl
+            packer build \
+            -var "db_username=${{ secrets.DB_USERNAME }}" \
+            -var "db_password=${{ secrets.DB_PASSWORD }}" \
+            -var "db_name=${{ secrets.DB_NAME }}" \
+            -var "db_port=${{ secrets.DB_PORT }}" \
+            -var "port=${{ secrets.PORT }}" \
+            packer/packer.pkr.hcl
+
+
+      
+
+
+
+
+
+      

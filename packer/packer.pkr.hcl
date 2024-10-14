@@ -47,6 +47,28 @@ variable "ami_name" {
   description = "The name of the resulting AMI"
 }
 
+variable "db_username" {
+  description = "Database username"
+}
+
+variable "db_password" {
+  description = "Database password"
+}
+
+variable "db_name" {
+  description = "Database name"
+}
+
+variable "db_port" {
+  description = "Database port"
+}
+
+variable "port" {
+  description = "Application port"
+}
+
+
+
 source "amazon-ebs" "ubuntu" {
   region                      = var.region
   source_ami                  = var.source_ami
