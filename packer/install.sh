@@ -31,7 +31,7 @@ echo "permission change "
 # Set the correct ownership of the app directory
 sudo chown -R csye6225:csye6225 /home/csye6225/app
 
-echo "PORT_test: ${var.port}"
+echo "PORT_test: ${port}"
 echo "DB_PORT: ${db_port}"
 
 
