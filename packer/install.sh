@@ -31,8 +31,12 @@ echo "permission change "
 # Set the correct ownership of the app directory
 sudo chown -R csye6225:csye6225 /home/csye6225/app
 
+echo "PORT_test: ${port}"
+echo "DB_PORT: ${db_port}"
+
+
 # Create the .env file dynamically using the Packer variables
-#NODE_ENV=${node_env}
+
 echo "env create  "
 sudo bash -c "cat > /home/csye6225/app/.env << EOF
 PORT=${port}
