@@ -104,6 +104,16 @@ jobs:
         with:
           name: app-artifact
 
+      - name: Check if app.zip exists
+        run: |
+          if [ -f "app.zip" ]; then
+            echo "app.zip found."
+          else
+            echo "app.zip not found."
+            exit 1
+          fi
+
+
 
       - name: Build Packer Image
         run: |

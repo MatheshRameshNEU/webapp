@@ -84,7 +84,10 @@ source "amazon-ebs" "ubuntu" {
 build {
   sources = ["source.amazon-ebs.ubuntu"]
 
-
+  provisioner "file" {
+    source = "app.zip"
+    destination = "/tmp/app.zip"
+  }
   provisioner "shell" {
     script = "packer/install.sh"
   }
