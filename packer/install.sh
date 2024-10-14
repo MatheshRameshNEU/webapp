@@ -23,27 +23,32 @@ echo "Listing all files in the current directory:"
 ls -la
 
 # Copy the application artifacts (app.zip) to the app directory
+echo "Copying app.zip to /home/csye6225/app/"
 sudo cp /tmp/app.zip /home/csye6225/app/
+echo "zipping app.zip to /home/csye6225/app/"
 sudo unzip /home/csye6225/app/app.zip -d /home/csye6225/app/
-
+echo "permission change "
 # Set the correct ownership of the app directory
 sudo chown -R csye6225:csye6225 /home/csye6225/app
 
 # Create the .env file dynamically using the Packer variables
 #NODE_ENV=${node_env}
-sudo bash -c 'cat > /home/csye6225/app/.env << EOF
+echo "env create  "
+sudo bash -c "cat > /home/csye6225/app/.env << EOF
 PORT=${port}
 DB_PORT=${db_port}
 DB_NAME=${db_name}
 DB_USERNAME=${db_username}
 DB_PASSWORD=${db_password}
 TEST_PORT=${db_name}  # Modify this if it's different from DB_NAME
-EOF'
+EOF"
 # Set ownership of the .env file
+echo "permission change two"
 sudo chown csye6225:csye6225 /home/csye6225/app/.env
 
 # Create the systemd service file for the Node.js application
-sudo bash -c 'cat > /etc/systemd/system/webapp.service << EOF
+echo "systemdddd "
+sudo bash -c "cat > /etc/systemd/system/webapp.service << EOF
 [Unit]
 Description=Web Application Service
 After=network.target
@@ -58,7 +63,7 @@ WorkingDirectory=/home/csye6225/app
 
 [Install]
 WantedBy=multi-user.target
-EOF'
+EOF"
 
 # Reload systemd to recognize the new service file
 sudo systemctl daemon-reload
