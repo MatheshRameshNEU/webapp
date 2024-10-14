@@ -91,6 +91,7 @@ build {
   provisioner "file" {
     source      = var.app_zip_path
     destination = "/tmp/app.zip"
+    generated   = true
   }
   provisioner "shell" {
     script = "packer/install.sh"
