@@ -117,6 +117,12 @@ jobs:
 
       - name: Build Packer Image
         run: |
+            echo "DB_USERNAME: ${{ secrets.DB_USERNAME }}"
+            echo "DB_PASSWORD: ${{ secrets.DB_PASSWORD }}"
+            echo "DB_NAME: ${{ secrets.DB_NAME }}"
+            echo "DB_PORT: ${{ secrets.DB_PORT }}"
+            echo "PORT: ${{ secrets.PORT }}"
+            
             packer init packer/packer.pkr.hcl
             packer build \
             -var "db_username=${{ secrets.DB_USERNAME }}" \
