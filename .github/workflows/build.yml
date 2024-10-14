@@ -24,21 +24,28 @@ jobs:
           node-version: '16'
 
       # Step 3: Start PostgreSQL using Docker
-      - name: Start PostgreSQL
+      - name: Install PostgreSQL
         run: |
-          docker run -d \
-            --name postgres \
-            -e POSTGRES_USER=${{ secrets.DB_USERNAME }} \
-            -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            -e POSTGRES_DB=${{ secrets.DB_NAME }} \
-            -p ${{ secrets.DB_PORT }}:5432 \
-            postgres:12
-          
-      # Step 4: Wait for PostgreSQL to be ready
+          sudo apt-get update
+          sudo apt-get install -y postgresql postgresql-contrib
+
+      # Step 4: Start PostgreSQL Service
+      - name: Start PostgreSQL Service
+        run: |
+          sudo systemctl start postgresql
+          sudo systemctl enable postgresql
+
+      # Step 5: Configure PostgreSQL
+      - name: Configure PostgreSQL
+        run: |
+          sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${{ secrets.DB_PASSWORD }}';"
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${{ secrets.DB_NAME }} TO ${{ secrets.DB_USERNAME }};"
+
+      # Step 6: Wait for PostgreSQL to be ready
       - name: Wait for PostgreSQL
         run: |
-          until docker exec postgres pg_isready -U ${{ secrets.DB_USERNAME }}; do
-            echo "Waiting for postgres...";
+          until sudo -u postgres psql -c "\l"; do
+            echo "Waiting for postgres to be ready...";
             sleep 5;
           done
 
