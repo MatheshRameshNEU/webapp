@@ -89,7 +89,7 @@ source "amazon-ebs" "ubuntu" {
 # Build configuration
 build {
   sources = ["source.amazon-ebs.ubuntu"]
-  
+
   provisioner "shell" {
     inline = [
       "echo 'PORT: ${var.port}'",
