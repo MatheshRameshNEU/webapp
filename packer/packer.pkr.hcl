@@ -13,6 +13,10 @@ variable "region" {
   default     = "us-east-1"
   description = "AWS region to deploy the instance"
 }
+variable "app_zip_path" {
+  type    = string
+  default = "app.zip"
+}
 
 variable "source_ami" {
   type        = string
@@ -84,7 +88,11 @@ source "amazon-ebs" "ubuntu" {
 build {
   sources = ["source.amazon-ebs.ubuntu"]
 
-
+  provisioner "file" {
+    source      = var.app_zip_path
+    destination = "/tmp/app.zip"
+    generated   = true
+  }
   provisioner "shell" {
     script = "packer/install.sh"
   }

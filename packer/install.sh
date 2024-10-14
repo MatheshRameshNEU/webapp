@@ -18,8 +18,12 @@ sudo useradd -r -s /usr/sbin/nologin -d /home/csye6225 csye6225
 sudo mkdir -p /home/csye6225/app  # Create the app directory
 sudo chown -R csye6225:csye6225 /home/csye6225
 
+echo "Current working directory: $(pwd)"
+echo "Listing all files in the current directory:"
+ls -la
+
 # Copy the application artifacts (app.zip) to the app directory
-sudo cp app.zip /home/csye6225/app/
+sudo cp /tmp/app.zip /home/csye6225/app/
 sudo unzip /home/csye6225/app/app.zip -d /home/csye6225/app/
 
 # Set the correct ownership of the app directory
