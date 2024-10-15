@@ -7,7 +7,6 @@ packer {
   }
 }
 
-# Define variables
 variable "region" {
   type        = string
   default     = "us-east-1"
@@ -75,9 +74,6 @@ variable "demo_acc_id" {
   description = "Demo AWS account ID"
 }
 
-provider "aws" {
-  region = var.region
-}
 
 
 

@@ -137,6 +137,7 @@ jobs:
             -var "source_ami=${{ secrets.AWS_SOURCE_AMI }}" \
             -var "subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
             -var "vpc_id=${{ secrets.AWS_VPC_ID }}" \
+            -var "demo_acc_id=${{ secrets.AWS_DEMO_ACC_ID }}" \
             packer/packer.pkr.hcl
 
 
