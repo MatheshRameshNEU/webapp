@@ -71,6 +71,14 @@ variable "port" {
   description = "Application port"
 }
 
+variable "demo_acc_id" {
+  description = "Demo AWS account ID"
+}
+
+provider "aws" {
+  region = var.region
+}
+
 
 
 source "amazon-ebs" "ubuntu" {
@@ -82,6 +90,8 @@ source "amazon-ebs" "ubuntu" {
   vpc_id                      = var.vpc_id
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
+
+  ami_users = [var.demo_acc_id]
 }
 
 

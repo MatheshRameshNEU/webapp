@@ -125,11 +125,6 @@ jobs:
 
       - name: Build Packer Image
         run: |
-            echo "DB_USERNAME: ${{ secrets.DB_USERNAME }}"
-            echo "DB_PASSWORD: ${{ secrets.DB_PASSWORD }}"
-            echo "DB_NAME: ${{ secrets.DB_NAME }}"
-            echo "DB_PORT: ${{ secrets.DB_PORT }}"
-            echo "PORT: ${{ secrets.PORT }}"
             
             packer init packer/packer.pkr.hcl
             packer build \
@@ -138,7 +133,10 @@ jobs:
             -var "db_name=${{ secrets.DB_NAME }}" \
             -var "db_port=${{ secrets.DB_PORT }}" \
             -var "port=${{ secrets.PORT }}" \
-            -var-file=packer/variables.pkrvars.hcl \
+            -var "region=${{ secrets.AWS_REGION }}" \
+            -var "source_ami=${{ secrets.AWS_SOURCE_AMI }}" \
+            -var "subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
+            -var "vpc_id=${{ secrets.AWS_VPC_ID }}" \
             packer/packer.pkr.hcl
 
 
