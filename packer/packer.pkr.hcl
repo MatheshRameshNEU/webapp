@@ -7,7 +7,6 @@ packer {
   }
 }
 
-# Define variables
 variable "region" {
   type        = string
   default     = "us-east-1"
@@ -71,6 +70,11 @@ variable "port" {
   description = "Application port"
 }
 
+variable "demo_acc_id" {
+  description = "Demo AWS account ID"
+}
+
+
 
 
 source "amazon-ebs" "ubuntu" {
@@ -82,25 +86,15 @@ source "amazon-ebs" "ubuntu" {
   vpc_id                      = var.vpc_id
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
+
+  ami_users = [var.demo_acc_id]
 }
 
 
 
-# Build configuration
 build {
   sources = ["source.amazon-ebs.ubuntu"]
 
-  provisioner "shell" {
-    inline = [
-      "echo 'PORT: ${var.port}'",
-      "echo 'DB_PORT: ${var.db_port}'",
-      "echo 'DB_USERNAME: ${var.db_username}'",
-      "echo 'DB_PASSWORD: ${var.db_password}'",
-      "echo 'DB_NAME: ${var.db_name}'"
-    ]
-
-
-  }
   provisioner "file" {
     source      = var.app_zip_path
     destination = "/tmp/app.zip"

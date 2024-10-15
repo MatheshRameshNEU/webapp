@@ -7,7 +7,7 @@ sudo apt install -y postgresql postgresql-contrib nodejs npm unzip
 
 # Changing the password for postgres user
 sudo -i -u postgres bash << EOF
-psql -c "ALTER USER postgres WITH PASSWORD 'Welcome@1';"
+psql -c "ALTER USER postgres WITH PASSWORD '$DB_PASSWORD';"
 EOF
 
 # Enabling PostgreSQL service
