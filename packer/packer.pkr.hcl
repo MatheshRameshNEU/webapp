@@ -92,21 +92,9 @@ source "amazon-ebs" "ubuntu" {
 
 
 
-# Build configuration
 build {
   sources = ["source.amazon-ebs.ubuntu"]
 
-  provisioner "shell" {
-    inline = [
-      "echo 'PORT: ${var.port}'",
-      "echo 'DB_PORT: ${var.db_port}'",
-      "echo 'DB_USERNAME: ${var.db_username}'",
-      "echo 'DB_PASSWORD: ${var.db_password}'",
-      "echo 'DB_NAME: ${var.db_name}'"
-    ]
-
-
-  }
   provisioner "file" {
     source      = var.app_zip_path
     destination = "/tmp/app.zip"
