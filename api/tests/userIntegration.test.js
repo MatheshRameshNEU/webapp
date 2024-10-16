@@ -56,7 +56,7 @@ describe("GET /v1/user/self", () => {
       .get("/v1/user/self")
       .auth(process.env.TEST_USER_EMAIL, process.env.TEST_USER_PASSWORD);
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(200);
     expect(response.body).toEqual({
       id: testUser.id,
       email: process.env.TEST_USER_EMAIL,
