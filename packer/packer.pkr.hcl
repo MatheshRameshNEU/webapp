@@ -88,6 +88,9 @@ source "amazon-ebs" "ubuntu" {
   associate_public_ip_address = true
 
   ami_users = [var.demo_acc_id]
+  tags = {
+    Name = var.ami_name
+  }
 }
 
 
