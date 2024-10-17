@@ -1,10 +1,6 @@
 name: Packer Build CI Workflow
 
 on:
-  workflow_run:
-    workflows: ["CI Workflow"]
-    types:
-      - completed
   pull_request:
     types:
       - closed  
@@ -35,6 +31,70 @@ jobs:
         id: setup
         with:
           version: "latest"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql postgresql-contrib
+
+      # Step 4: Start PostgreSQL Service
+      - name: Start PostgreSQL Service
+        run: |
+          sudo systemctl start postgresql
+          sudo systemctl enable postgresql
+
+      # Step 5: Configure PostgreSQL
+      - name: Configure PostgreSQL
+        run: |
+          sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${{ secrets.DB_PASSWORD }}';"
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${{ secrets.DB_NAME }} TO ${{ secrets.DB_USERNAME }};"
+
+      # Step 6: Wait for PostgreSQL to be ready
+      - name: Wait for PostgreSQL
+        run: |
+          until sudo -u postgres psql -c "\l"; do
+            echo "Waiting for postgres to be ready...";
+            sleep 5;
+          done
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        env:
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+
+          # Test user credentials
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          
+          # New user credentials
+          NEW_USER_EMAIL: ${{ secrets.NEW_USER_EMAIL }}
+          NEW_USER_PASSWORD: ${{ secrets.NEW_USER_PASSWORD }}
+          
+          # Duplicate user email
+          DUPLICATE_USER_EMAIL: ${{ secrets.DUPLICATE_USER_EMAIL }}
+          
+          # User first and last names
+          TEST_USER_FIRST_NAME: ${{ secrets.TEST_USER_FIRST_NAME }}
+          TEST_USER_LAST_NAME: ${{ secrets.TEST_USER_LAST_NAME }}
+          NEW_USER_FIRST_NAME: ${{ secrets.NEW_USER_FIRST_NAME }}
+
+          # Updated user data for PUT tests
+          UPDATED_USER_FIRST_NAME: ${{ secrets.UPDATED_USER_FIRST_NAME }}
+          UPDATED_USER_LAST_NAME: ${{ secrets.UPDATED_USER_LAST_NAME }}
+          UPDATED_USER_PASSWORD: ${{ secrets.UPDATED_USER_PASSWORD }}
+          
+        run: |
+          npm test
 
       - name: Build Application Artifact
         run: |
