@@ -5,6 +5,8 @@ set -e
 sudo apt update
 sudo apt install -y postgresql postgresql-contrib nodejs npm unzip
 
+sudo apt-get remove --purge -y git
+
 # Changing the password for postgres user
 sudo -i -u postgres bash << EOF
 psql -c "ALTER USER postgres WITH PASSWORD '$DB_PASSWORD';"
