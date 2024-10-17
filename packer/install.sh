@@ -26,9 +26,6 @@ sudo unzip /home/csye6225/app/app.zip -d /home/csye6225/app/
 # Setting the owner of the webapp
 sudo chown -R csye6225:csye6225 /home/csye6225/app
 
-echo "PORT_test: $PORT"
-echo "DB_PORT: $DB_PORT"
-
 
 # Create the .env file for the app variables
 
