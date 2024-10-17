@@ -74,6 +74,6 @@ GET /v1/user/self: Retrieves the authenticated user’s profile .
 
 ## Author
 
-Mathesh Ramesh
+Mathesh Ramesh 
 
 
