@@ -50,25 +50,6 @@ variable "ami_name" {
   description = "The name of the resulting AMI"
 }
 
-variable "db_username" {
-  description = "Database username"
-}
-
-variable "db_password" {
-  description = "Database password"
-}
-
-variable "db_name" {
-  description = "Database name"
-}
-
-variable "db_port" {
-  description = "Database port"
-}
-
-variable "port" {
-  description = "Application port"
-}
 
 variable "demo_acc_id" {
   description = "Demo AWS account ID"
