@@ -60,6 +60,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_PORT: ${{ secrets.DB_PORT }}
+          DB_HOST: "localhost"
 
           # Test user credentials
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
