@@ -105,13 +105,6 @@ build {
   }
   provisioner "shell" {
     script = "packer/install.sh"
-    environment_vars = [
-      "PORT=${var.port}",
-      "DB_PORT=${var.db_port}",
-      "DB_NAME=${var.db_name}",
-      "DB_USERNAME=${var.db_username}",
-      "DB_PASSWORD=${var.db_password}"
-    ]
   }
 
 }
