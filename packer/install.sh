@@ -24,9 +24,6 @@ sudo chown -R csye6225:csye6225 /home/csye6225/app
 
 # Create the .env file for the app variables
 
-# Set ownership of the .env file
-
-sudo chown csye6225:csye6225 /home/csye6225/app/.env
 
 # Create the systemd service file for the webapp application
 
