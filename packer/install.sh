@@ -3,17 +3,10 @@ set -e
 
 # Update & install necessary dependencies
 sudo apt update
-sudo apt install -y postgresql postgresql-contrib nodejs npm unzip
+sudo apt install -y nodejs npm unzip
 
 sudo apt-get remove --purge -y git
 
-# Changing the password for postgres user
-sudo -i -u postgres bash << EOF
-psql -c "ALTER USER postgres WITH PASSWORD '$DB_PASSWORD';"
-EOF
-
-# Enabling PostgreSQL service
-sudo systemctl enable postgresql
 
 # Creating a user 'csye6225'
 sudo useradd -r -s /usr/sbin/nologin -d /home/csye6225 csye6225
@@ -30,14 +23,6 @@ sudo chown -R csye6225:csye6225 /home/csye6225/app
 
 
 # Create the .env file for the app variables
-
-sudo bash -c "cat > /home/csye6225/app/.env << EOF
-PORT=$PORT
-DB_PORT=$DB_PORT
-DB_NAME=$DB_NAME
-DB_USERNAME=$DB_USERNAME
-DB_PASSWORD=$DB_PASSWORD
-EOF"
 
 # Set ownership of the .env file
 
