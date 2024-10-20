@@ -33,11 +33,6 @@ jobs:
       - name: Validate Packer Template
         run: |
             packer validate \
-            -var "db_username=${{ secrets.DB_USERNAME }}" \
-            -var "db_password=${{ secrets.DB_PASSWORD }}" \
-            -var "db_name=${{ secrets.DB_NAME }}" \
-            -var "db_port=${{ secrets.DB_PORT }}" \
-            -var "port=${{ secrets.PORT }}" \
             -var "region=${{ secrets.AWS_REGION }}" \
             -var "source_ami=${{ secrets.AWS_SOURCE_AMI }}" \
             -var "subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
