@@ -16,11 +16,22 @@ const db = new Sequelize(
     host: process.env.DB_HOST || "localhost",
     port: process.env.DB_PORT || 5432,
     dialect: "postgres",
+    logging: console.log,
+    dialectOptions: {
+      connectTimeout: 60000
+    }
   }
 );
 
 const User = require("./models/user")(db);
 const authMiddleware = require("./middlewares/auth")(User);
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_PORT:', process.env.DB_PORT);
+console.log('DB_NAME:', process.env.DB_NAME);
+console.log('DB_USERNAME:', process.env.DB_USERNAME);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+// Don't log the password for security reasons
+
 
 // initialize Express app
 const initialize = async (app) => {
@@ -78,8 +89,10 @@ const initialize = async (app) => {
         .then(() => {
           return res.status(200).send();
         })
-        .catch((error) => {
-          console.error("Unable to connect to the database:", error);
+        .catch(err => {
+            console.error('Unable to connect to the database:');
+            console.error('Error name:', err.name);
+            console.error('Error message:', err.message);
           return res.status(503).send();
         });
     });
