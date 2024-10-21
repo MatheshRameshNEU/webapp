@@ -16,14 +16,12 @@ const db = new Sequelize(
     host: process.env.DB_HOST || "localhost",
     port: process.env.DB_PORT || 5432,
     dialect: "postgres",
+    logging: console.log,
     dialectOptions: {
       ssl: {
         require: true,
         rejectUnauthorized: false,
       },
-    },
-    logging: console.log,
-    dialectOptions: {
       connectTimeout: 60000
     }
   }
@@ -240,6 +238,11 @@ const initialize = async (app) => {
     });
   } catch (err) {
     console.error("Failed to sync database:", err);
+    console.error("Error name:", err.name);
+    console.error("Error message:", err.message);
+    if (err.original) {
+      console.error("Original error:", err.original);
+    }
   }
 };
 
