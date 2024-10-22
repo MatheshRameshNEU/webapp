@@ -85,7 +85,7 @@ const initialize = async (app) => {
     });
 
     //creating user profile
-    app.post("/v1/user", async (req, res) => {
+    app.post("/v2/user", async (req, res) => {
       const { email, password, firstName, lastName } = req.body;
       if (Object.keys(req.query).length !== 0) {
         return res.status(400).send();
@@ -128,7 +128,7 @@ const initialize = async (app) => {
       }
     });
     // updating user profile
-    app.put("/v1/user/self", authMiddleware, async (req, res) => {
+    app.put("/v2/user/self", authMiddleware, async (req, res) => {
       if (Object.keys(req.query).length !== 0) {
         return res.status(400).send();
       }
@@ -187,7 +187,7 @@ const initialize = async (app) => {
     });
 
     // geeting user profile
-    app.get("/v1/user/self", authMiddleware, async (req, res) => {
+    app.get("/v2/user/self", authMiddleware, async (req, res) => {
       if (req.method !== "GET") {
         return res.status(405).send();
       }
@@ -211,7 +211,7 @@ const initialize = async (app) => {
       }
     });
     //non exist method for user/self
-    app.all("/v1/user/self", (req, res) => {
+    app.all("/v2/user/self", (req, res) => {
       return res.status(405).send();
     });
 
