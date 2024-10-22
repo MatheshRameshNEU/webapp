@@ -64,7 +64,7 @@ source "amazon-ebs" "ubuntu" {
   instance_type               = var.instance_type
   ssh_username                = var.ssh_username
   ami_name                    = var.ami_name
-  vpc_id                      = var.vpc_id
+  vpc_id                      = var.bad
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
 
