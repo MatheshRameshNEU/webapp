@@ -10,7 +10,7 @@ sudo apt-get remove --purge -y git
 
 # Creating a user 'csye6225'
 sudo useradd -r -s /usr/sbin/nologin -d /home/csye6225 csye6225
-sudo mkdir -p /home/csye6225/app  # Create the app directory
+sudo mkdir -p /home/csye6225/app 
 sudo chown -R csye6225:csye6225 /home/csye6225
 
 
@@ -18,11 +18,11 @@ sudo chown -R csye6225:csye6225 /home/csye6225
 sudo cp /tmp/app.zip /home/csye6225/app/
 sudo unzip /home/csye6225/app/app.zip -d /home/csye6225/app/
 
-# Setting the owner of the webapp
+# owner of the webapp
 sudo chown -R csye6225:csye6225 /home/csye6225/app
 
 
-# Create the .env file for the app variables
+#  .env file for the app 
 sudo bash -c "cat > /home/csye6225/app/.env << EOF
 PORT=3000
 DB_HOST=placeholder_host
@@ -38,7 +38,7 @@ else
   echo "Error: .env file not created!"
   exit 1
 fi
-# Set ownership of the .env file
+# permission .env file
 sudo chown csye6225:csye6225 /home/csye6225/app/.env
 
 
