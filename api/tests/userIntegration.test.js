@@ -11,7 +11,7 @@ let db;
 let User;
 
 beforeAll(async () => {
-  // Set up the database
+  // Set up te database
   db = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USERNAME,
