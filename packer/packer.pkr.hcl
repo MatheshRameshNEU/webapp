@@ -61,7 +61,7 @@ variable "demo_acc_id" {
 source "amazon-ebs" "ubuntu" {
   region                      = var.region
   source_ami                  = var.source_ami
-  instance_type               = var.instance_type
+  instance_type               =  var.instance_type
   ssh_username                = var.ssh_username
   ami_name                    = var.ami_name
   vpc_id                      = var.vpc_id
