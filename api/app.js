@@ -4,7 +4,7 @@ const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 
-// Load env var from .env file
+// Lod env var from .env file
 dotenv.config();
 
 // Connect to databse
