@@ -32,12 +32,7 @@ DB_USERNAME=placeholder_user
 DB_PASSWORD=placeholder_password
 EOF"
 
-if [ -f /home/csye6225/app/.env ]; then
-  echo ".env file created successfully"
-else
-  echo "Error: .env file not created!"
-  exit 1
-fi
+
 # permission .env file
 sudo chown csye6225:csye6225 /home/csye6225/app/.env
 
