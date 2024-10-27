@@ -4,13 +4,22 @@ const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const multer = require('multer');
-const s3 = require('./s3'); // AWS S3 setup
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3"); // AWS S3 setup
 const { v4: uuidv4 } = require('uuid');
 
 
 
 // Load env var from .env file
 dotenv.config();
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
 
 // Connect to databse
 const db = new Sequelize(
@@ -238,45 +247,43 @@ const initialize = async (app) => {
       try {
         const userId = req.user.id;
         const file = req.file;
-    
+
         if (!file) {
           return res.status(400).json({ error: 'Profile picture is required.' });
         }
-    
+
         const fileExtension = file.originalname.split('.').pop();
         const fileName = `${uuidv4()}.${fileExtension}`;
 
         console.log('S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
         console.log('Key:', `${userId}/${fileName}`);
-    
+
         const params = {
           Bucket: process.env.S3_BUCKET_NAME,
           Key: `${userId}/${fileName}`,
           Body: file.buffer,
           ContentType: file.mimetype,
         };
-        console.log('params'+params);
+
+        const command = new PutObjectCommand(params);
 
         try {
-          const data = await s3.upload(params).promise();
+          const data = await s3Client.send(command);
           console.log('File uploaded successfully:', data);
-          //return res.status(201).json({ message: 'File uploaded successfully', data });
         } catch (error) {
           console.error('Error uploading file:', error);
           return res.status(500).json({ message: 'Error uploading file', error });
         }
 
-        //const data = await s3.upload(params).promise();
-    
         // Store the image record in the database
         const newImage = await Image.create({
           id: uuidv4(),
           file_name: fileName,
-          url: data.Location,
+          url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${userId}/${fileName}`,
           user_id: userId,
           upload_date: new Date(),
         });
-    
+
         res.status(201).json({
           file_name: newImage.file_name,
           id: newImage.id,
@@ -285,10 +292,11 @@ const initialize = async (app) => {
           user_id: newImage.user_id,
         });
       } catch (error) {
-        console.error('Error uploading profile picture:', error); sub399
+        console.error('Error uploading profile picture:', error);
         res.status(500).json({ error: 'An error occurred while uploading the profile picture.' });
       }
     });
+
 
     //non exist method for user/self
     app.all("/v1/user/self", (req, res) => {
