@@ -4,7 +4,7 @@ const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const multer = require('multer');
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3"); // AWS S3 setup
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3"); // AWS S3 setup
 const { v4: uuidv4 } = require('uuid');
 
 
