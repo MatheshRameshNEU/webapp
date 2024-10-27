@@ -245,6 +245,9 @@ const initialize = async (app) => {
     
         const fileExtension = file.originalname.split('.').pop();
         const fileName = `${uuidv4()}.${fileExtension}`;
+
+        console.log('S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
+        console.log('Key:', `${userId}/${fileName}`);
     
         const params = {
           Bucket: process.env.S3_BUCKET_NAME,
@@ -252,8 +255,18 @@ const initialize = async (app) => {
           Body: file.buffer,
           ContentType: file.mimetype,
         };
+        console.log('params'+params);
 
-        const data = await s3.upload(params).promise();
+        try {
+          const data = await s3.upload(params).promise();
+          console.log('File uploaded successfully:', data);
+          //return res.status(201).json({ message: 'File uploaded successfully', data });
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          return res.status(500).json({ message: 'Error uploading file', error });
+        }
+
+        //const data = await s3.upload(params).promise();
     
         // Store the image record in the database
         const newImage = await Image.create({
@@ -272,7 +285,7 @@ const initialize = async (app) => {
           user_id: newImage.user_id,
         });
       } catch (error) {
-        console.error('Error uploading profile picture:', error);
+        console.error('Error uploading profile picture:', error); sub399
         res.status(500).json({ error: 'An error occurred while uploading the profile picture.' });
       }
     });
