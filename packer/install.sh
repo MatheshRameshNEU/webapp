@@ -3,7 +3,10 @@ set -e
 
 # Update & install necessary dependencies
 sudo apt update
-sudo apt install -y nodejs npm unzip amazon-cloudwatch-agent
+sudo apt install -y nodejs npm unzip
+
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
 
 sudo apt-get remove --purge -y git
 
