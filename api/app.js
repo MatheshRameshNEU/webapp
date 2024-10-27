@@ -344,8 +344,8 @@ app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
 
     // Delete the image from S3
     try {
-      await s3.deleteObject(params).promise();
-      console.log('File deleted successfully from S3');
+      const command = new DeleteObjectCommand(params);
+      await s3Client.send(command);
     } catch (error) {
       console.error('Error deleting file from S3:', error);
       return res.status(500).json({ message: 'Error deleting file from S3', error });
