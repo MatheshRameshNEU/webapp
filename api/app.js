@@ -252,6 +252,11 @@ const initialize = async (app) => {
           return res.status(400).json({ error: 'Profile picture is required.' });
         }
 
+        const image = await Image.findOne({ where: { user_id: userId } });
+        if (image) {
+          return res.status(404).json()
+        }
+
         const fileExtension = file.originalname.split('.').pop();
         const fileName = `${uuidv4()}.${fileExtension}`;
 
@@ -296,6 +301,66 @@ const initialize = async (app) => {
         res.status(500).json({ error: 'An error occurred while uploading the profile picture.' });
       }
     });
+
+    // Get the profile picture of the authenticated user
+app.get('/v1/user/self/pic', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Fetch the image record from the database for the authenticated user
+    const image = await Image.findOne({ where: { user_id: userId } });
+
+    if (!image) {
+      return res.status(404).json({ message: 'Profile picture not found' });
+    }
+
+    res.status(200).json({
+      file_name: image.file_name,
+      id: image.id,
+      url: image.url,
+      upload_date: image.upload_date,
+      user_id: image.user_id,
+    });
+  } catch (error) {
+    console.error('Error fetching profile picture:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the profile picture.' });
+  }
+});
+// Delete the profile picture of the authenticated user
+app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const image = await Image.findOne({ where: { user_id: userId } });
+
+    if (!image) {
+      return res.status(404).json({ });
+    }
+
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: `${userId}/${image.file_name}`,
+    };
+
+    // Delete the image from S3
+    try {
+      await s3.deleteObject(params).promise();
+      console.log('File deleted successfully from S3');
+    } catch (error) {
+      console.error('Error deleting file from S3:', error);
+      return res.status(500).json({ message: 'Error deleting file from S3', error });
+    }
+
+    // Delete the image record from the database
+    await image.destroy();
+
+    res.status(204).send(); // No Content
+  } catch (error) {
+    console.error('Error deleting profile picture:', error);
+    res.status(500).json({ error: 'An error occurred while deleting the profile picture.' });
+  }
+});
+
 
 
     //non exist method for user/self
