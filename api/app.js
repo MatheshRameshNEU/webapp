@@ -3,6 +3,11 @@ const cors = require("cors");
 const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
+const multer = require('multer');
+const s3 = require('./s3'); // AWS S3 setup
+const { v4: uuidv4 } = require('uuid');
+
+
 
 // Load env var from .env file
 dotenv.config();
@@ -28,6 +33,7 @@ const db = new Sequelize(
 );
 
 const User = require("./models/user")(db);
+const Image = require('./models/image')(db);
 const authMiddleware = require("./middlewares/auth")(User);
 console.log('DB_HOST:', process.env.DB_HOST);
 console.log('DB_PORT:', process.env.DB_PORT);
@@ -226,6 +232,51 @@ const initialize = async (app) => {
         return res.status(400).json();
       }
     });
+
+    const upload = multer({ storage: multer.memoryStorage() });
+    app.post('/v1/user/self/pic', authMiddleware, upload.single('profilePic'), async (req, res) => {
+      try {
+        const userId = req.user.id;
+        const file = req.file;
+    
+        if (!file) {
+          return res.status(400).json({ error: 'Profile picture is required.' });
+        }
+    
+        const fileExtension = file.originalname.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExtension}`;
+    
+        const params = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `${userId}/${fileName}`,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        };
+
+        const data = await s3.upload(params).promise();
+    
+        // Store the image record in the database
+        const newImage = await Image.create({
+          id: uuidv4(),
+          file_name: fileName,
+          url: data.Location,
+          user_id: userId,
+          upload_date: new Date(),
+        });
+    
+        res.status(201).json({
+          file_name: newImage.file_name,
+          id: newImage.id,
+          url: newImage.url,
+          upload_date: newImage.upload_date,
+          user_id: newImage.user_id,
+        });
+      } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        res.status(500).json({ error: 'An error occurred while uploading the profile picture.' });
+      }
+    });
+
     //non exist method for user/self
     app.all("/v1/user/self", (req, res) => {
       return res.status(405).send();
