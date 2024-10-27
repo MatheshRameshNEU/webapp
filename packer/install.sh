@@ -3,7 +3,7 @@ set -e
 
 # Update & install necessary dependencies
 sudo apt update
-sudo apt install -y nodejs npm unzip
+sudo apt install -y nodejs npm unzip amazon-cloudwatch-agent
 
 sudo apt-get remove --purge -y git
 
