@@ -302,6 +302,7 @@ const initialize = async (app) => {
 
   const upload = multer({ storage: multer.memoryStorage() });
   app.post('/v1/user/self/pic', authMiddleware, upload.single('profilePic'), async (req, res) => {
+    const startTime = new Date();
       try {
         const userId = req.user.id;
         const file = req.file;
