@@ -300,8 +300,8 @@ const initialize = async (app) => {
       }
     });
 
-    const upload = multer({ storage: multer.memoryStorage() });
-    app.post('/v1/user/self/pic', authMiddleware, upload.single('profilePic'), async (req, res) => {
+  const upload = multer({ storage: multer.memoryStorage() });
+  app.post('/v1/user/self/pic', authMiddleware, upload.single('profilePic'), async (req, res) => {
       try {
         const userId = req.user.id;
         const file = req.file;
@@ -360,7 +360,7 @@ const initialize = async (app) => {
         res.status(500).json({ error: 'An error occurred while uploading the profile picture.' });
       }
       finally {
-        trackAPICall('UploadProfilePicture', startTime);
+        await trackAPICall('UploadProfilePicture', startTime);
       }
     });
 
