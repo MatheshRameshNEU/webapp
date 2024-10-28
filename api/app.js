@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const multer = require('multer');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3"); // AWS S3 setup
+const { CloudWatchClient, PutMetricDataCommand } = require("@aws-sdk/client-cloudwatch");
 const { v4: uuidv4 } = require('uuid');
 
 
@@ -18,6 +19,10 @@ const s3Client = new S3Client({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
+});
+
+const cloudWatchClient = new CloudWatchClient({
+  region: process.env.AWS_REGION,
 });
 
 
@@ -50,6 +55,45 @@ console.log('DB_NAME:', process.env.DB_NAME);
 console.log('DB_USERNAME:', process.env.DB_USERNAME);
 console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
 
+const trackAPICall = async (apiName, startTime) => {
+  const endTime = new Date();
+  const timeTaken = endTime - startTime;
+
+  const params = {
+    Namespace: 'MyWebAppMetrics',
+    MetricData: [
+      {
+        MetricName: 'APICallCount',
+        Dimensions: [
+          {
+            Name: 'APIName',
+            Value: apiName,
+          },
+        ],
+        Value: 1,
+        Unit: 'Count',
+      },
+      {
+        MetricName: 'APILatency',
+        Dimensions: [
+          {
+            Name: 'APIName',
+            Value: apiName,
+          },
+        ],
+        Value: timeTaken,
+        Unit: 'Milliseconds',
+      }
+    ]
+  };
+
+  try {
+    await cloudWatchClient.send(new PutMetricDataCommand(params));
+    console.log(`Metrics for ${apiName} sent to CloudWatch.`);
+  } catch (error) {
+    console.error('Error sending metrics to CloudWatch:', error);
+  }
+};
 
 // initialize Express app
 const initialize = async (app) => {
@@ -91,7 +135,8 @@ const initialize = async (app) => {
     console.log("Database synced successfully.");
 
     // Health check endpoint
-    app.all("/healthz", (req, res) => {
+    app.all("/healthz", async (req, res) => {
+      const startTime = new Date();
       if (req.method !== "GET") {
         return res.status(405).send();
       }
@@ -103,20 +148,22 @@ const initialize = async (app) => {
         return res.status(400).send();
       }
 
-      db.authenticate()
-        .then(() => {
-          return res.status(200).send();
-        })
-        .catch(err => {
-            console.error('Unable to connect to the database:');
-            console.error('Error name:', err.name);
-            console.error('Error message:', err.message);
-          return res.status(503).send();
-        });
+      try {
+        // Attempt to authenticate with the database
+        await db.authenticate();
+        res.status(200).send();
+      } catch (err) {
+        console.error('Unable to connect to the database:');
+        console.error('Error name:', err.name);
+        console.error('Error message:', err.message);
+        res.status(503).send();
+      } 
+      trackAPICall('HealthCheck', startTime);
     });
 
     //creating user profile
     app.post("/v1/user", async (req, res) => {
+      const startTime = new Date();
       const { email, password, firstName, lastName } = req.body;
       if (Object.keys(req.query).length !== 0) {
         return res.status(400).send();
@@ -157,9 +204,13 @@ const initialize = async (app) => {
 
         return res.status(400).json();
       }
+      finally {
+        trackAPICall('CreateUser', startTime);
+      }
     });
     // updating user profile
     app.put("/v1/user/self", authMiddleware, async (req, res) => {
+      const startTime = new Date();
       if (Object.keys(req.query).length !== 0) {
         return res.status(400).send();
       }
@@ -215,10 +266,14 @@ const initialize = async (app) => {
         console.error("Error updating user:", error);
         return res.status(400).json();
       }
+      finally {
+        trackAPICall('UpdateUser', startTime);
+      }
     });
 
     // geeting user profile
     app.get("/v1/user/self", authMiddleware, async (req, res) => {
+      const startTime = new Date();
       if (req.method !== "GET") {
         return res.status(405).send();
       }
@@ -239,6 +294,9 @@ const initialize = async (app) => {
         });
       } catch (error) {
         return res.status(400).json();
+      }
+      finally {
+        trackAPICall('GetUser', startTime);
       }
     });
 
@@ -279,6 +337,7 @@ const initialize = async (app) => {
           console.error('Error uploading file:', error);
           return res.status(500).json({ message: 'Error uploading file', error });
         }
+        
 
         // Store the image record in the database
         const newImage = await Image.create({
@@ -300,10 +359,14 @@ const initialize = async (app) => {
         console.error('Error uploading profile picture:', error);
         res.status(500).json({ error: 'An error occurred while uploading the profile picture.' });
       }
+      finally {
+        trackAPICall('UploadProfilePicture', startTime);
+      }
     });
 
     // Get the profile picture of the authenticated user
 app.get('/v1/user/self/pic', authMiddleware, async (req, res) => {
+  const startTime = new Date();
   try {
     const userId = req.user.id;
 
@@ -325,9 +388,13 @@ app.get('/v1/user/self/pic', authMiddleware, async (req, res) => {
     console.error('Error fetching profile picture:', error);
     res.status(500).json({ error: 'An error occurred while fetching the profile picture.' });
   }
+  finally {
+    trackAPICall('GetProfilePicture', startTime);
+  }
 });
 // Delete the profile picture of the authenticated user
 app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
+  const startTime = new Date();
   try {
     const userId = req.user.id;
 
@@ -358,6 +425,9 @@ app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Error deleting profile picture:', error);
     res.status(500).json({ error: 'An error occurred while deleting the profile picture.' });
+  }
+  finally {
+    trackAPICall('DeleteProfilePicture', startTime);
   }
 });
 
