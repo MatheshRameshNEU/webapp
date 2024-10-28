@@ -10,6 +10,7 @@
   "author": "Mathesh Ramesh",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-cloudwatch": "^3.679.0",
     "@aws-sdk/client-s3": "^3.679.0",
     "aws-sdk": "^2.1691.0",
     "bcrypt": "^5.1.1",
