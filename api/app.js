@@ -7,6 +7,7 @@ const multer = require('multer');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3"); // AWS S3 setup
 const { CloudWatchClient, PutMetricDataCommand } = require("@aws-sdk/client-cloudwatch");
 const { v4: uuidv4 } = require('uuid');
+const sendGridMail = require('@sendgrid/mail');
 
 
 
@@ -20,6 +21,9 @@ const s3Client = new S3Client({
 const cloudWatchClient = new CloudWatchClient({
   region: process.env.AWS_REGION,
 });
+
+sendGridMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 
 
 // Connect to databse
@@ -139,6 +143,24 @@ const trackS3OperationTime = async (operationName, timeTaken) => {
   }
 };
 
+sendGridMail.setApiKey(process.env.SENDGRID_API_KEY);
+const sendEmail = async (to, subject, text) => {
+  const msg = {
+    to,
+    from: 'matheshramesh98@gmail.com',
+    subject,
+    text,
+  };
+
+  try {
+    await sendGridMail.send(msg);
+    console.log(`Email sent to ${to}`);
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+};
+
+
 // initialize Express app
 const initialize = async (app) => {
   app.use(
@@ -236,6 +258,7 @@ const initialize = async (app) => {
         const dbQueryTime = new Date() - dbStartTime;
         await trackDatabaseQueryTime('UserCreate', dbQueryTime);
         console.log(`[Database] New user created with ID: ${newUser.id}`);
+        await sendEmail(newUser.email, 'Welcome to MyWebApp', 'Thank you for registering!');
 
         return res.status(201).json({
           id: newUser.id,
