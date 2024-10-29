@@ -110,7 +110,7 @@ const trackDatabaseQueryTime = async (queryName, timeTaken) => {
   };
 
   try {
-    await cloudWatchClient.putMetricData(params).promise();
+    await cloudWatchClient.send(new PutMetricDataCommand(params));
     console.log(`Database query metrics sent for ${queryName}`);
   } catch (error) {
     console.error('Error sending database query metrics to CloudWatch:', error);
@@ -137,7 +137,7 @@ const trackS3OperationTime = async (operationName, timeTaken) => {
   };
 
   try {
-    await cloudWatchClient.putMetricData(params).promise();
+    await cloudWatchClient.send(new PutMetricDataCommand(params));
     console.log(`S3 operation metrics sent for ${operationName}`);
   } catch (error) {
     console.error('Error sending S3 operation metrics to CloudWatch:', error);
