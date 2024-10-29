@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-
+const { trackAPICall, trackDatabaseQueryTime } = require('../app');
 const authMiddleware = (User) => {
   return async (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -13,7 +13,10 @@ const authMiddleware = (User) => {
     const [email, password] = credentials.split(':');
 
     try {
+      const dbStartTime=new Date();
       const user = await User.findOne({ where: { email } });
+      const dbQueryTime=new Date()-dbStartTime;
+      await trackDatabaseQueryTime('UserAuth', dbQueryTime);
       if (!user) {
         return res.status(401).json();
       }
