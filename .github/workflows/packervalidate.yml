@@ -5,7 +5,7 @@ on:
     types:
       - opened
     branches:
-      - main
+      - test-packer
 
 jobs:
   packer-ci:
