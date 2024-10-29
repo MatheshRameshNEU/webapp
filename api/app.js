@@ -45,11 +45,6 @@ const db = new Sequelize(
 const User = require("./models/user")(db);
 const Image = require('./models/image')(db);
 const authMiddleware = require("./middlewares/auth")(User);
-console.log('DB_HOST:', process.env.DB_HOST);
-console.log('DB_PORT:', process.env.DB_PORT);
-console.log('DB_NAME:', process.env.DB_NAME);
-console.log('DB_USERNAME:', process.env.DB_USERNAME);
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
 
 const trackAPICall = async (apiName, startTime) => {
   const endTime = new Date();
@@ -186,6 +181,7 @@ const initialize = async (app) => {
     // Health check endpoint
     app.all("/healthz", async (req, res) => {
       const startTime = new Date();
+      console.log("[API] Health check endpoint hit.");
       if (req.method !== "GET") {
         return res.status(405).send();
       }
@@ -201,6 +197,7 @@ const initialize = async (app) => {
         // Attempt to authenticate with the database
         await db.authenticate();
         res.status(200).send();
+        console.log("[API] Health check passed.");
       } catch (err) {
         console.error('Unable to connect to the database:');
         console.error('Error name:', err.name);
@@ -213,6 +210,7 @@ const initialize = async (app) => {
     //creating user profile
     app.post("/v1/user", async (req, res) => {
       const startTime = new Date();
+      console.log("[API] Creating a new user profile.");
       const { email, password, firstName, lastName } = req.body;
       if (Object.keys(req.query).length !== 0) {
         return res.status(400).send();
@@ -237,6 +235,7 @@ const initialize = async (app) => {
         });
         const dbQueryTime = new Date() - dbStartTime;
         await trackDatabaseQueryTime('UserCreate', dbQueryTime);
+        console.log(`[Database] New user created with ID: ${newUser.id}`);
 
         return res.status(201).json({
           id: newUser.id,
@@ -253,8 +252,9 @@ const initialize = async (app) => {
         ) {
           return res.status(400).json();
         }
-
+        console.error(`[API] Error creating user: ${error.message}`);
         return res.status(400).json();
+        
       }
       finally {
         trackAPICall('CreateUser', startTime);
@@ -263,6 +263,7 @@ const initialize = async (app) => {
     // updating user profile
     app.put("/v1/user/self", authMiddleware, async (req, res) => {
       const startTime = new Date();
+      console.log("[API] Updating user profile.");
       if (Object.keys(req.query).length !== 0) {
         return res.status(400).send();
       }
@@ -308,7 +309,7 @@ const initialize = async (app) => {
         await req.user.update(updates);
         const dbQueryTime = new Date() - dbStartTime;
         await trackDatabaseQueryTime('UserUpdate', dbQueryTime);
-
+        console.log("[Database] User profile updated successfully.");
         return res.status(200).json({
           id:req.user.id,
           email: req.user.email,
@@ -328,6 +329,8 @@ const initialize = async (app) => {
     // geeting user profile
     app.get("/v1/user/self", authMiddleware, async (req, res) => {
       const startTime = new Date();
+      console.log("[API] Fetching user profile.");
+
       if (req.method !== "GET") {
         return res.status(405).send();
       }
@@ -338,6 +341,7 @@ const initialize = async (app) => {
         return res.status(400).send();
       }
       try {
+        console.log("[API] User profile retrieved successfully.");
         return res.status(200).json({
           id: req.user.id,
           email: req.user.email,
@@ -347,6 +351,7 @@ const initialize = async (app) => {
           account_updated: req.user.account_updated,
         });
       } catch (error) {
+        console.error("[API] Error fetching user profile:", error);
         return res.status(400).json();
       }
       finally {
@@ -357,6 +362,7 @@ const initialize = async (app) => {
   const upload = multer({ storage: multer.memoryStorage() });
   app.post('/v1/user/self/pic', authMiddleware, upload.single('profilePic'), async (req, res) => {
     const startTime = new Date();
+    console.log("[API] uploading user profile pic.");
       try {
         const userId = req.user.id;
         const file = req.file;
@@ -408,7 +414,7 @@ const initialize = async (app) => {
         });
         const dbCreateTime = new Date() - dbCreateStartTime;
         await trackDatabaseQueryTime('CreateUserProfileImage', dbCreateTime);
-
+        console.log("[API] pic uploaded in s3");
         res.status(201).json({
           file_name: newImage.file_name,
           id: newImage.id,
@@ -427,7 +433,11 @@ const initialize = async (app) => {
 
     // Get the profile picture of the authenticated user
 app.get('/v1/user/self/pic', authMiddleware, async (req, res) => {
+  console.log("[API] Fetching  profile pic.");
   const startTime = new Date();
+  if (req.method !== "GET") {
+    return res.status(405).send();
+  }
   try {
     const userId = req.user.id;
 
@@ -439,7 +449,7 @@ app.get('/v1/user/self/pic', authMiddleware, async (req, res) => {
     if (!image) {
       return res.status(404).json({ message: 'Profile picture not found' });
     }
-
+    console.log("user profile pic found.");
     res.status(200).json({
       file_name: image.file_name,
       id: image.id,
@@ -458,6 +468,7 @@ app.get('/v1/user/self/pic', authMiddleware, async (req, res) => {
 // Delete the profile picture of the authenticated user
 app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
   const startTime = new Date();
+  console.log("[API] Deleting user profile pic.");
   try {
     const userId = req.user.id;
     const dbStartTime = new Date();
@@ -480,6 +491,7 @@ app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
       await s3Client.send(command);
       const s3OperationTime = new Date() - s3StartTime;
       await trackS3OperationTime('DeleteProfilePicture', s3OperationTime);
+      console.log("pic deleted in S3");
     } catch (error) {
       console.error('Error deleting file from S3:', error);
       return res.status(500).json({ message: 'Error deleting file from S3', error });
@@ -487,7 +499,7 @@ app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
 
     // Delete the image record from the database
     await image.destroy();
-
+    console.log("pic deleted in database");
     res.status(204).send(); // No Content
   } catch (error) {
     console.error('Error deleting profile picture:', error);
