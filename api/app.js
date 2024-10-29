@@ -15,10 +15,6 @@ dotenv.config();
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
 });
 
 const cloudWatchClient = new CloudWatchClient({
@@ -92,6 +88,59 @@ const trackAPICall = async (apiName, startTime) => {
     console.log(`Metrics for ${apiName} sent to CloudWatch.`);
   } catch (error) {
     console.error('Error sending metrics to CloudWatch:', error);
+  }
+};
+
+const trackDatabaseQueryTime = async (queryName, timeTaken) => {
+  const params = {
+    Namespace: 'MyWebAppMetrics',
+    MetricData: [
+      {
+        MetricName: 'DatabaseQueryLatency',
+        Dimensions: [
+          {
+            Name: 'QueryName',
+            Value: queryName,
+          },
+        ],
+        Value: timeTaken,
+        Unit: 'Milliseconds',
+      }
+    ]
+  };
+
+  try {
+    await cloudWatchClient.putMetricData(params).promise();
+    console.log(`Database query metrics sent for ${queryName}`);
+  } catch (error) {
+    console.error('Error sending database query metrics to CloudWatch:', error);
+  }
+};
+
+// Additional tracking for S3 operation latency
+const trackS3OperationTime = async (operationName, timeTaken) => {
+  const params = {
+    Namespace: 'MyWebAppMetrics',
+    MetricData: [
+      {
+        MetricName: 'S3OperationLatency',
+        Dimensions: [
+          {
+            Name: 'OperationName',
+            Value: operationName,
+          },
+        ],
+        Value: timeTaken,
+        Unit: 'Milliseconds',
+      }
+    ]
+  };
+
+  try {
+    await cloudWatchClient.putMetricData(params).promise();
+    console.log(`S3 operation metrics sent for ${operationName}`);
+  } catch (error) {
+    console.error('Error sending S3 operation metrics to CloudWatch:', error);
   }
 };
 
@@ -179,12 +228,15 @@ const initialize = async (app) => {
 
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        const dbStartTime = new Date();
         const newUser = await User.create({
           email,
           password: hashedPassword,
           firstName,
           lastName,
         });
+        const dbQueryTime = new Date() - dbStartTime;
+        await trackDatabaseQueryTime('UserCreate', dbQueryTime);
 
         return res.status(201).json({
           id: newUser.id,
@@ -252,8 +304,10 @@ const initialize = async (app) => {
         if (firstName) updates.firstName = firstName;
         if (lastName) updates.lastName = lastName;
         if (password) updates.password = await bcrypt.hash(password, 10); // Hash the new password
-
+        const dbStartTime = new Date();
         await req.user.update(updates);
+        const dbQueryTime = new Date() - dbStartTime;
+        await trackDatabaseQueryTime('UserUpdate', dbQueryTime);
 
         return res.status(200).json({
           id:req.user.id,
@@ -308,10 +362,12 @@ const initialize = async (app) => {
         const file = req.file;
 
         if (!file) {
-          return res.status(400).json({ error: 'Profile picture is required.' });
+          return res.status(400).json();
         }
-
+        const dbStartTime = new Date();
         const image = await Image.findOne({ where: { user_id: userId } });
+        const dbQueryTime = new Date() - dbStartTime;
+        await trackDatabaseQueryTime('FindUserProfileImage', dbQueryTime);
         if (image) {
           return res.status(404).json()
         }
@@ -321,7 +377,7 @@ const initialize = async (app) => {
 
         console.log('S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
         console.log('Key:', `${userId}/${fileName}`);
-
+        const s3StartTime = new Date();
         const params = {
           Bucket: process.env.S3_BUCKET_NAME,
           Key: `${userId}/${fileName}`,
@@ -333,13 +389,15 @@ const initialize = async (app) => {
 
         try {
           const data = await s3Client.send(command);
+          const s3OperationTime = new Date() - s3StartTime;
+          await trackS3OperationTime('UploadProfilePicture', s3OperationTime);
           console.log('File uploaded successfully:', data);
         } catch (error) {
           console.error('Error uploading file:', error);
           return res.status(500).json({ message: 'Error uploading file', error });
         }
         
-
+        const dbCreateStartTime = new Date();
         // Store the image record in the database
         const newImage = await Image.create({
           id: uuidv4(),
@@ -348,6 +406,8 @@ const initialize = async (app) => {
           user_id: userId,
           upload_date: new Date(),
         });
+        const dbCreateTime = new Date() - dbCreateStartTime;
+        await trackDatabaseQueryTime('CreateUserProfileImage', dbCreateTime);
 
         res.status(201).json({
           file_name: newImage.file_name,
@@ -372,8 +432,10 @@ app.get('/v1/user/self/pic', authMiddleware, async (req, res) => {
     const userId = req.user.id;
 
     // Fetch the image record from the database for the authenticated user
+    const dbStartTime = new Date();
     const image = await Image.findOne({ where: { user_id: userId } });
-
+    const dbQueryTime = new Date() - dbStartTime;
+    await trackDatabaseQueryTime('FindUserProfileImage', dbQueryTime);
     if (!image) {
       return res.status(404).json({ message: 'Profile picture not found' });
     }
@@ -398,13 +460,15 @@ app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
   const startTime = new Date();
   try {
     const userId = req.user.id;
-
+    const dbStartTime = new Date();
     const image = await Image.findOne({ where: { user_id: userId } });
+    const dbQueryTime = new Date() - dbStartTime;
+    await trackDatabaseQueryTime('FindUserProfileImage', dbQueryTime);
 
     if (!image) {
       return res.status(404).json({ });
     }
-
+    const s3StartTime = new Date();
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
       Key: `${userId}/${image.file_name}`,
@@ -414,6 +478,8 @@ app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
     try {
       const command = new DeleteObjectCommand(params);
       await s3Client.send(command);
+      const s3OperationTime = new Date() - s3StartTime;
+      await trackS3OperationTime('DeleteProfilePicture', s3OperationTime);
     } catch (error) {
       console.error('Error deleting file from S3:', error);
       return res.status(500).json({ message: 'Error deleting file from S3', error });
@@ -436,6 +502,9 @@ app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
 
     //non exist method for user/self
     app.all("/v1/user/self", (req, res) => {
+      return res.status(405).send();
+    });
+    app.all("/v1/user/self/pic", (req, res) => {
       return res.status(405).send();
     });
 
