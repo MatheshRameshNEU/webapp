@@ -59,11 +59,6 @@ if [ ! -f /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json ]; t
     echo "CloudWatch agent configuration file was not created successfully"
     exit 1
 fi
-
-# Create log directory and set permissions
-sudo mkdir -p /home/csye6225/app/logs
-sudo chown -R csye6225:csye6225 /home/csye6225/app/logs
-
 sudo apt-get remove --purge -y git
 
 
@@ -71,6 +66,9 @@ sudo apt-get remove --purge -y git
 sudo useradd -r -s /usr/sbin/nologin -d /home/csye6225 csye6225
 sudo mkdir -p /home/csye6225/app 
 sudo chown -R csye6225:csye6225 /home/csye6225
+# Create log directory and set permissions
+sudo mkdir -p /home/csye6225/app/logs
+sudo chown -R csye6225:csye6225 /home/csye6225/app/logs
 
 
 # Copy the app artifacts to the app directory
