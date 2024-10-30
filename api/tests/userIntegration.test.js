@@ -7,7 +7,7 @@ const { Sequelize } = require("sequelize");
 const initialize = require("../app");
 const fs = require("fs");
 const path = require("path");
-//const sendGridMail = require("@sendgrid/mail");
+const sendGridMail = require("@sendgrid/mail");
 
 jest.mock("fs", () => ({
   existsSync: jest.fn().mockReturnValue(true),
@@ -16,8 +16,9 @@ jest.mock("fs", () => ({
   createWriteStream: jest.fn(() => ({
     write: jest.fn(),
   })),
-  readFileSync: jest.fn(), // Mock readFileSync to avoid issues
+  readFileSync: jest.fn(() => '{}'), // Return empty JSON as a default for reading files
 }));
+
 
 
 jest.mock("@sendgrid/mail", () => ({
