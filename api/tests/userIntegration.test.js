@@ -10,13 +10,15 @@ const path = require("path");
 //const sendGridMail = require("@sendgrid/mail");
 
 jest.mock("fs", () => ({
-  existsSync: jest.fn().mockReturnValue(true), // Assume the directory exists
-  mkdirSync: jest.fn(), // Do nothing on mkdirSync
-  writeFileSync: jest.fn(), // Do nothing on writeFileSync
+  existsSync: jest.fn().mockReturnValue(true),
+  mkdirSync: jest.fn(),
+  writeFileSync: jest.fn(),
   createWriteStream: jest.fn(() => ({
-    write: jest.fn(), // Mock write to avoid file output
+    write: jest.fn(),
   })),
+  readFileSync: jest.fn(), // Mock readFileSync to avoid issues
 }));
+
 
 jest.mock("@sendgrid/mail", () => ({
   setApiKey: jest.fn(),
