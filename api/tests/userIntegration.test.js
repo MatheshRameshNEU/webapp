@@ -2,7 +2,7 @@ require('dotenv').config();
 process.env.NODE_ENV = 'test';// Load environment variables from .env
 const request = require("supertest");
 const express = require("express");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const { Sequelize } = require("sequelize");
 const initialize = require("../app");
 const fs = require("fs");
