@@ -4,6 +4,8 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const { Sequelize } = require("sequelize");
 const initialize = require("../app");
+const fs = require("fs");
+const path = require("path");
 
 let app;
 let server;
@@ -11,6 +13,18 @@ let db;
 let User;
 
 beforeAll(async () => {
+  const logDir = path.join("/home/csye6225/app/logs");
+  const logFilePath = path.join(logDir, "app.log");
+
+  // Create the directory if it doesn't exist
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  // Create the log file if it doesn't exist
+  if (!fs.existsSync(logFilePath)) {
+    fs.writeFileSync(logFilePath, "");
+  }
+
   // Set up the database
   db = new Sequelize(
     process.env.DB_NAME,
