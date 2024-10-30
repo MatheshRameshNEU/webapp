@@ -4,6 +4,8 @@ const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const {
   S3Client,
   PutObjectCommand,
@@ -28,6 +30,27 @@ const cloudWatchClient = new CloudWatchClient({
 });
 
 sendGridMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const logFilePath = path.join("/home/csye6225/app/logs", "app.log");
+
+// Create a write stream for logging to app.log
+const logStream = fs.createWriteStream(logFilePath, { flags: "a" });
+
+// Override console.log to also log to the file
+console.log = (message) => {
+  const timestampedMessage = `[${new Date().toISOString()}] ${message}\n`;
+  logStream.write(timestampedMessage);
+  process.stdout.write(timestampedMessage); // Also log to console
+};
+
+// Override console.error similarly for error logging
+console.error = (message) => {
+  const timestampedMessage = `[${new Date().toISOString()} ERROR] ${message}\n`;
+  logStream.write(timestampedMessage);
+  process.stderr.write(timestampedMessage); // Also log to console
+};
+
+console.log("Application logging initialized.");
 
 // Connect to databse
 const db = new Sequelize(
