@@ -1,4 +1,5 @@
-require('dotenv').config(); // Load environment variables from .env
+require('dotenv').config(); 
+process.env.NODE_ENV = 'test';// Load environment variables from .env
 const request = require("supertest");
 const express = require("express");
 const bcrypt = require("bcrypt");
@@ -6,6 +7,16 @@ const { Sequelize } = require("sequelize");
 const initialize = require("../app");
 const fs = require("fs");
 const path = require("path");
+//const sendGridMail = require("@sendgrid/mail");
+
+jest.mock("@sendgrid/mail", () => ({
+  setApiKey: jest.fn(),
+  send: jest.fn().mockResolvedValue({}), // This skips the send function
+}));
+
+// Mock console.log and console.error to avoid unwanted output in tests
+console.log = jest.fn();
+console.error = jest.fn();
 
 let app;
 let server;
