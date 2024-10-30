@@ -11,27 +11,6 @@ sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
 sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc
 sudo bash -c "cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << EOF
 {
-  "agent": {
-    "metrics_collection_interval": 60,
-    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"
-  },
-  "metrics": {
-    "append_dimensions": {
-      "InstanceId": "\${aws:InstanceId}"
-    },
-    "aggregation_dimensions": [["InstanceId"]],
-    "metrics_collected": {
-      "cpu": {
-        "measurement": ["cpu_usage_idle", "cpu_usage_user", "cpu_usage_system"],
-        "metrics_collection_interval": 60,
-        "resources": ["*"]
-      },
-      "mem": {
-        "measurement": ["mem_used_percent"],
-        "metrics_collection_interval": 60
-      }
-    }
-  },
   "logs": {
     "logs_collected": {
       "files": {
