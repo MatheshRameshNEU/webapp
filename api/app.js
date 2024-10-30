@@ -3,13 +3,18 @@ const cors = require("cors");
 const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
-const multer = require('multer');
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3"); // AWS S3 setup
-const { CloudWatchClient, PutMetricDataCommand } = require("@aws-sdk/client-cloudwatch");
-const { v4: uuidv4 } = require('uuid');
-const sendGridMail = require('@sendgrid/mail');
-
-
+const multer = require("multer");
+const {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} = require("@aws-sdk/client-s3"); // AWS S3 setup
+const {
+  CloudWatchClient,
+  PutMetricDataCommand,
+} = require("@aws-sdk/client-cloudwatch");
+const { v4: uuidv4 } = require("uuid");
+const sendGridMail = require("@sendgrid/mail");
 
 // Load env var from .env file
 dotenv.config();
@@ -23,8 +28,6 @@ const cloudWatchClient = new CloudWatchClient({
 });
 
 sendGridMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-
 
 // Connect to databse
 const db = new Sequelize(
@@ -41,13 +44,13 @@ const db = new Sequelize(
         require: true,
         rejectUnauthorized: false,
       },
-      connectTimeout: 60000
-    }
+      connectTimeout: 60000,
+    },
   }
 );
 
 const User = require("./models/user")(db);
-const Image = require('./models/image')(db);
+const Image = require("./models/image")(db);
 const authMiddleware = require("./middlewares/auth")(User);
 
 const trackAPICall = async (apiName, startTime) => {
@@ -55,91 +58,91 @@ const trackAPICall = async (apiName, startTime) => {
   const timeTaken = endTime - startTime;
 
   const params = {
-    Namespace: 'MyWebAppMetrics',
+    Namespace: "MyWebAppMetrics",
     MetricData: [
       {
-        MetricName: 'APICallCount',
+        MetricName: "APICallCount",
         Dimensions: [
           {
-            Name: 'APIName',
+            Name: "APIName",
             Value: apiName,
           },
         ],
         Value: 1,
-        Unit: 'Count',
+        Unit: "Count",
       },
       {
-        MetricName: 'APILatency',
+        MetricName: "APILatency",
         Dimensions: [
           {
-            Name: 'APIName',
+            Name: "APIName",
             Value: apiName,
           },
         ],
         Value: timeTaken,
-        Unit: 'Milliseconds',
-      }
-    ]
+        Unit: "Milliseconds",
+      },
+    ],
   };
 
   try {
     await cloudWatchClient.send(new PutMetricDataCommand(params));
     console.log(`Metrics for ${apiName} sent to CloudWatch.`);
   } catch (error) {
-    console.error('Error sending metrics to CloudWatch:', error);
+    console.error("Error sending metrics to CloudWatch:", error);
   }
 };
 
 const trackDatabaseQueryTime = async (queryName, timeTaken) => {
   const params = {
-    Namespace: 'MyWebAppMetrics',
+    Namespace: "MyWebAppMetrics",
     MetricData: [
       {
-        MetricName: 'DatabaseQueryLatency',
+        MetricName: "DatabaseQueryLatency",
         Dimensions: [
           {
-            Name: 'QueryName',
+            Name: "QueryName",
             Value: queryName,
           },
         ],
         Value: timeTaken,
-        Unit: 'Milliseconds',
-      }
-    ]
+        Unit: "Milliseconds",
+      },
+    ],
   };
 
   try {
     await cloudWatchClient.send(new PutMetricDataCommand(params));
     console.log(`Database query metrics sent for ${queryName}`);
   } catch (error) {
-    console.error('Error sending database query metrics to CloudWatch:', error);
+    console.error("Error sending database query metrics to CloudWatch:", error);
   }
 };
 
 // Additional tracking for S3 operation latency
 const trackS3OperationTime = async (operationName, timeTaken) => {
   const params = {
-    Namespace: 'MyWebAppMetrics',
+    Namespace: "MyWebAppMetrics",
     MetricData: [
       {
-        MetricName: 'S3OperationLatency',
+        MetricName: "S3OperationLatency",
         Dimensions: [
           {
-            Name: 'OperationName',
+            Name: "OperationName",
             Value: operationName,
           },
         ],
         Value: timeTaken,
-        Unit: 'Milliseconds',
-      }
-    ]
+        Unit: "Milliseconds",
+      },
+    ],
   };
 
   try {
     await cloudWatchClient.send(new PutMetricDataCommand(params));
     console.log(`S3 operation metrics sent for ${operationName}`);
   } catch (error) {
-    console.error('Error sending S3 operation metrics to CloudWatch:', error);
+    console.error("Error sending S3 operation metrics to CloudWatch:", error);
   }
 };
 
@@ -147,7 +150,7 @@ sendGridMail.setApiKey(process.env.SENDGRID_API_KEY);
 const sendEmail = async (to, subject, text) => {
   const msg = {
     to,
-    from: 'matheshramesh98@gmail.com',
+    from: "matheshramesh98@gmail.com",
     subject,
     text,
   };
@@ -156,17 +159,16 @@ const sendEmail = async (to, subject, text) => {
     await sendGridMail.send(msg);
     console.log(`Email sent to ${to}`);
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error("Error sending email:", error);
   }
 };
-
 
 // initialize Express app
 const initialize = async (app) => {
   app.use(
     cors({
-      origin: "*", 
-      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"], 
+      origin: "*",
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
     })
   );
 
@@ -221,12 +223,12 @@ const initialize = async (app) => {
         res.status(200).send();
         console.log("[API] Health check passed.");
       } catch (err) {
-        console.error('Unable to connect to the database:');
-        console.error('Error name:', err.name);
-        console.error('Error message:', err.message);
+        console.error("Unable to connect to the database:");
+        console.error("Error name:", err.name);
+        console.error("Error message:", err.message);
         res.status(503).send();
-      } 
-      trackAPICall('HealthCheck', startTime);
+      }
+      trackAPICall("HealthCheck", startTime);
     });
 
     //creating user profile
@@ -242,7 +244,12 @@ const initialize = async (app) => {
         return res.status(400).send();
       }
 
-      if (email.trim() === "" || password.trim() === "" || firstName.trim() === "" || lastName.trim() === "") {
+      if (
+        email.trim() === "" ||
+        password.trim() === "" ||
+        firstName.trim() === "" ||
+        lastName.trim() === ""
+      ) {
         return res.status(400).send();
       }
 
@@ -256,9 +263,13 @@ const initialize = async (app) => {
           lastName,
         });
         const dbQueryTime = new Date() - dbStartTime;
-        await trackDatabaseQueryTime('UserCreate', dbQueryTime);
+        await trackDatabaseQueryTime("UserCreate", dbQueryTime);
         console.log(`[Database] New user created with ID: ${newUser.id}`);
-        await sendEmail(newUser.email, 'Welcome to MyWebApp', 'Thank you for registering!');
+        await sendEmail(
+          newUser.email,
+          "Welcome to MyWebApp",
+          "Thank you for registering!"
+        );
 
         return res.status(201).json({
           id: newUser.id,
@@ -277,10 +288,8 @@ const initialize = async (app) => {
         }
         console.error(`[API] Error creating user: ${error.message}`);
         return res.status(400).json();
-        
-      }
-      finally {
-        trackAPICall('CreateUser', startTime);
+      } finally {
+        trackAPICall("CreateUser", startTime);
       }
     });
     // updating user profile
@@ -314,10 +323,9 @@ const initialize = async (app) => {
       );
 
       if (hasInvalidFields) {
-        return res.status(400).json(); 
+        return res.status(400).json();
       }
 
-      
       if (email && email !== req.user.email) {
         return res.status(400).json();
       }
@@ -331,10 +339,10 @@ const initialize = async (app) => {
         const dbStartTime = new Date();
         await req.user.update(updates);
         const dbQueryTime = new Date() - dbStartTime;
-        await trackDatabaseQueryTime('UserUpdate', dbQueryTime);
+        await trackDatabaseQueryTime("UserUpdate", dbQueryTime);
         console.log("[Database] User profile updated successfully.");
         return res.status(200).json({
-          id:req.user.id,
+          id: req.user.id,
           email: req.user.email,
           firstName: req.user.firstName,
           lastName: req.user.lastName,
@@ -343,9 +351,8 @@ const initialize = async (app) => {
       } catch (error) {
         console.error("Error updating user:", error);
         return res.status(400).json();
-      }
-      finally {
-        trackAPICall('UpdateUser', startTime);
+      } finally {
+        trackAPICall("UpdateUser", startTime);
       }
     });
 
@@ -376,164 +383,197 @@ const initialize = async (app) => {
       } catch (error) {
         console.error("[API] Error fetching user profile:", error);
         return res.status(400).json();
-      }
-      finally {
-        trackAPICall('GetUser', startTime);
+      } finally {
+        trackAPICall("GetUser", startTime);
       }
     });
 
-  const upload = multer({ storage: multer.memoryStorage() });
-  app.post('/v1/user/self/pic', authMiddleware, upload.single('profilePic'), async (req, res) => {
-    const startTime = new Date();
-    console.log("[API] uploading user profile pic.");
+    const upload = multer({ storage: multer.memoryStorage() });
+    app.post(
+      "/v1/user/self/pic",
+      authMiddleware,
+      upload.single("profilePic"),
+      async (req, res) => {
+        const startTime = new Date();
+        console.log("[API] uploading user profile pic.");
+        try {
+          const userId = req.user.id;
+          const file = req.file;
+
+          if (!file) {
+            return res.status(400).json();
+          }
+
+          const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif"];
+          if (!allowedMimeTypes.includes(file.mimetype)) {
+            console.warn("[API] Invalid file type provided:", file.mimetype);
+            return res.status(400).json();
+          }
+
+          // Validate file extension
+          const allowedExtensions = ["jpg", "jpeg", "png", "gif"];
+          const fileExtension = file.originalname
+            .split(".")
+            .pop()
+            .toLowerCase();
+          if (!allowedExtensions.includes(fileExtension)) {
+            console.warn("[API] Invalid file extension:", fileExtension);
+            return res.status(400).json();
+          }
+
+          const dbStartTime = new Date();
+          const image = await Image.findOne({ where: { user_id: userId } });
+          const dbQueryTime = new Date() - dbStartTime;
+          await trackDatabaseQueryTime("FindUserProfileImage", dbQueryTime);
+          if (image) {
+            return res.status(404).json();
+          }
+
+          const fileName = `${uuidv4()}.${fileExtension}`;
+
+          console.log("S3_BUCKET_NAME:", process.env.S3_BUCKET_NAME);
+          console.log("Key:", `${userId}/${fileName}`);
+          const s3StartTime = new Date();
+          const params = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: `${userId}/${fileName}`,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+          };
+
+          const command = new PutObjectCommand(params);
+
+          try {
+            const data = await s3Client.send(command);
+            const s3OperationTime = new Date() - s3StartTime;
+            await trackS3OperationTime("UploadProfilePicture", s3OperationTime);
+            console.log("File uploaded successfully:", data);
+          } catch (error) {
+            console.error("Error uploading file:", error);
+            return res.status(500).json();
+          }
+
+          const dbCreateStartTime = new Date();
+          // Store the image record in the database
+          const newImage = await Image.create({
+            id: uuidv4(),
+            file_name: fileName,
+            url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${userId}/${fileName}`,
+            user_id: userId,
+            upload_date: new Date(),
+          });
+          const dbCreateTime = new Date() - dbCreateStartTime;
+          await trackDatabaseQueryTime("CreateUserProfileImage", dbCreateTime);
+          console.log("[API] pic uploaded in s3");
+          await sendEmail(
+            req.user.email,
+            "Profile Updated",
+            "Your profile information has been successfully updated."
+          );
+          res.status(201).json({
+            file_name: newImage.file_name,
+            id: newImage.id,
+            url: newImage.url,
+            upload_date: newImage.upload_date,
+            user_id: newImage.user_id,
+          });
+        } catch (error) {
+          console.error("Error uploading profile picture:", error);
+          res.status(500).json();
+        } finally {
+          await trackAPICall("UploadProfilePicture", startTime);
+        }
+      }
+    );
+
+    // Get the profile picture of the authenticated user
+    app.get("/v1/user/self/pic", authMiddleware, async (req, res) => {
+      console.log("[API] Fetching  profile pic.");
+      const startTime = new Date();
+      if (req.method !== "GET") {
+        return res.status(405).send();
+      }
+      if (
+        Object.keys(req.query).length !== 0 ||
+        (req.body && Object.keys(req.body).length !== 0)
+      ) {
+        return res.status(400).send();
+      }
       try {
         const userId = req.user.id;
-        const file = req.file;
 
-        if (!file) {
-          return res.status(400).json();
-        }
+        // Fetch the image record from the database for the authenticated user
         const dbStartTime = new Date();
         const image = await Image.findOne({ where: { user_id: userId } });
         const dbQueryTime = new Date() - dbStartTime;
-        await trackDatabaseQueryTime('FindUserProfileImage', dbQueryTime);
-        if (image) {
-          return res.status(404).json()
+        await trackDatabaseQueryTime("FindUserProfileImage", dbQueryTime);
+        if (!image) {
+          return res.status(404).json();
         }
+        console.log("user profile pic found.");
+        res.status(200).json({
+          file_name: image.file_name,
+          id: image.id,
+          url: image.url,
+          upload_date: image.upload_date,
+          user_id: image.user_id,
+        });
+      } catch (error) {
+        console.error("Error fetching profile picture:", error);
+        res
+          .status(500)
+          .json();
+      } finally {
+        trackAPICall("GetProfilePicture", startTime);
+      }
+    });
+    // Delete the profile picture of the authenticated user
+    app.delete("/v1/user/self/pic", authMiddleware, async (req, res) => {
+      const startTime = new Date();
+      console.log("[API] Deleting user profile pic.");
+      try {
+        const userId = req.user.id;
+        const dbStartTime = new Date();
+        const image = await Image.findOne({ where: { user_id: userId } });
+        const dbQueryTime = new Date() - dbStartTime;
+        await trackDatabaseQueryTime("FindUserProfileImage", dbQueryTime);
 
-        const fileExtension = file.originalname.split('.').pop();
-        const fileName = `${uuidv4()}.${fileExtension}`;
-
-        console.log('S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
-        console.log('Key:', `${userId}/${fileName}`);
+        if (!image) {
+          return res.status(404).json({});
+        }
         const s3StartTime = new Date();
         const params = {
           Bucket: process.env.S3_BUCKET_NAME,
-          Key: `${userId}/${fileName}`,
-          Body: file.buffer,
-          ContentType: file.mimetype,
+          Key: `${userId}/${image.file_name}`,
         };
 
-        const command = new PutObjectCommand(params);
-
+        // Delete the image from S3
         try {
-          const data = await s3Client.send(command);
+          const command = new DeleteObjectCommand(params);
+          await s3Client.send(command);
           const s3OperationTime = new Date() - s3StartTime;
-          await trackS3OperationTime('UploadProfilePicture', s3OperationTime);
-          console.log('File uploaded successfully:', data);
+          await trackS3OperationTime("DeleteProfilePicture", s3OperationTime);
+          console.log("pic deleted in S3");
         } catch (error) {
-          console.error('Error uploading file:', error);
-          return res.status(500).json({ message: 'Error uploading file', error });
+          console.error("Error deleting file from S3:", error);
+          return res
+            .status(500)
+            .json();
         }
-        
-        const dbCreateStartTime = new Date();
-        // Store the image record in the database
-        const newImage = await Image.create({
-          id: uuidv4(),
-          file_name: fileName,
-          url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${userId}/${fileName}`,
-          user_id: userId,
-          upload_date: new Date(),
-        });
-        const dbCreateTime = new Date() - dbCreateStartTime;
-        await trackDatabaseQueryTime('CreateUserProfileImage', dbCreateTime);
-        console.log("[API] pic uploaded in s3");
-        res.status(201).json({
-          file_name: newImage.file_name,
-          id: newImage.id,
-          url: newImage.url,
-          upload_date: newImage.upload_date,
-          user_id: newImage.user_id,
-        });
+
+        // Delete the image record from the database
+        await image.destroy();
+        console.log("pic deleted in database");
+        res.status(204).send(); // No Content
       } catch (error) {
-        console.error('Error uploading profile picture:', error);
-        res.status(500).json({ error: 'An error occurred while uploading the profile picture.' });
-      }
-      finally {
-        await trackAPICall('UploadProfilePicture', startTime);
+        console.error("Error deleting profile picture:", error);
+        res
+          .status(500)
+          .json();
+      } finally {
+        trackAPICall("DeleteProfilePicture", startTime);
       }
     });
-
-    // Get the profile picture of the authenticated user
-app.get('/v1/user/self/pic', authMiddleware, async (req, res) => {
-  console.log("[API] Fetching  profile pic.");
-  const startTime = new Date();
-  if (req.method !== "GET") {
-    return res.status(405).send();
-  }
-  try {
-    const userId = req.user.id;
-
-    // Fetch the image record from the database for the authenticated user
-    const dbStartTime = new Date();
-    const image = await Image.findOne({ where: { user_id: userId } });
-    const dbQueryTime = new Date() - dbStartTime;
-    await trackDatabaseQueryTime('FindUserProfileImage', dbQueryTime);
-    if (!image) {
-      return res.status(404).json({ message: 'Profile picture not found' });
-    }
-    console.log("user profile pic found.");
-    res.status(200).json({
-      file_name: image.file_name,
-      id: image.id,
-      url: image.url,
-      upload_date: image.upload_date,
-      user_id: image.user_id,
-    });
-  } catch (error) {
-    console.error('Error fetching profile picture:', error);
-    res.status(500).json({ error: 'An error occurred while fetching the profile picture.' });
-  }
-  finally {
-    trackAPICall('GetProfilePicture', startTime);
-  }
-});
-// Delete the profile picture of the authenticated user
-app.delete('/v1/user/self/pic', authMiddleware, async (req, res) => {
-  const startTime = new Date();
-  console.log("[API] Deleting user profile pic.");
-  try {
-    const userId = req.user.id;
-    const dbStartTime = new Date();
-    const image = await Image.findOne({ where: { user_id: userId } });
-    const dbQueryTime = new Date() - dbStartTime;
-    await trackDatabaseQueryTime('FindUserProfileImage', dbQueryTime);
-
-    if (!image) {
-      return res.status(404).json({ });
-    }
-    const s3StartTime = new Date();
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: `${userId}/${image.file_name}`,
-    };
-
-    // Delete the image from S3
-    try {
-      const command = new DeleteObjectCommand(params);
-      await s3Client.send(command);
-      const s3OperationTime = new Date() - s3StartTime;
-      await trackS3OperationTime('DeleteProfilePicture', s3OperationTime);
-      console.log("pic deleted in S3");
-    } catch (error) {
-      console.error('Error deleting file from S3:', error);
-      return res.status(500).json({ message: 'Error deleting file from S3', error });
-    }
-
-    // Delete the image record from the database
-    await image.destroy();
-    console.log("pic deleted in database");
-    res.status(204).send(); // No Content
-  } catch (error) {
-    console.error('Error deleting profile picture:', error);
-    res.status(500).json({ error: 'An error occurred while deleting the profile picture.' });
-  }
-  finally {
-    trackAPICall('DeleteProfilePicture', startTime);
-  }
-});
-
-
 
     //non exist method for user/self
     app.all("/v1/user/self", (req, res) => {
