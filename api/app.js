@@ -29,10 +29,13 @@ const cloudWatchClient = new CloudWatchClient({
   region: process.env.AWS_REGION,
 });
 
+if (process.env.NODE_ENV !== 'test') {
 sendGridMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 
 const logFilePath = path.join("/home/csye6225/app/logs", "app.log");
 
+if (process.env.NODE_ENV !== 'test') {
 // Create a write stream for logging to app.log
 const logStream = fs.createWriteStream(logFilePath, { flags: "a" });
 
@@ -49,6 +52,7 @@ console.error = (message) => {
   logStream.write(timestampedMessage);
   process.stderr.write(timestampedMessage); // Also log to console
 };
+}
 
 console.log("Application logging initialized.");
 
