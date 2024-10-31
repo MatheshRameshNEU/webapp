@@ -181,6 +181,12 @@ const sendEmail = async (to, subject, text) => {
 
 // initialize Express app
 const initialize = async (app) => {
+  app.use((req, res, next) => {
+    if (req.method === "OPTIONS") {
+      return res.status(405).send("Method Not Allowed");
+    }
+    next();
+  });
   app.use(
     cors({
       origin: "*",
