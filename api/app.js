@@ -16,6 +16,8 @@ const {
 const { v4: uuidv4 } = require("uuid");
 const sendGridMail = require("@sendgrid/mail");
 const winston = require("winston");
+const path = require('path');
+
 
 // Load env var from .env file
 dotenv.config();
