@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test';
 require('dotenv').config(); // Load environment variables from .env
 const request = require("supertest");
 const express = require("express");
