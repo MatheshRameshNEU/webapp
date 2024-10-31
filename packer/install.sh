@@ -19,11 +19,17 @@ sudo bash -c 'cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent
   "logs": {
     "logs_collected": {
       "files": {
-        "collect_list": [
+        "collect_list": "collect_list": [
           {
             "file_path": "/var/log/syslog",
             "log_group_name": "cloudwebapp-me-logs",
-            "log_stream_name": "{instance_id}",
+            "log_stream_name": "{instance_id}-syslog",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/home/csye6225/app/logs/app.log",
+            "log_group_name": "cloudwebapp-me-logs",
+            "log_stream_name": "{instance_id}-app-log",
             "timezone": "UTC"
           }
         ]
