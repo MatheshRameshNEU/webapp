@@ -9,56 +9,34 @@ wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-
 sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
 
 sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc
-# sudo bash -c "cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << EOF
-# {
-#   "logs": {
-#     "logs_collected": {
-#       "files": {
-#         "collect_list": [
-#           {
-#             "file_path": "/home/csye6225/app/logs/app.log",
-#             "log_group_name": "webapp-log-group",
-#             "log_stream_name": "{instance_id}",
-#             "timestamp_format": "%Y-%m-%d %H:%M:%S"
-#           }
-#         ]
-#       }
-#     }
-#   }
-# }
-# EOF"
 
-sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json > /dev/null << 'EOF'
+sudo bash -c 'cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF
 {
-    "agent": {
-        "run_as_user": "root"
-    },
-    "logs": {
-        "logs_collected": {
-            "files": {
-                "collect_list": [
-                    {
-                        "file_path": "/var/log/syslog",
-                        "log_group_name": "webapp-log-group",
-                        "log_stream_name": "{instance_id}",
-                        "timestamp_format": "%Y-%m-%d %H:%M:%S"
-                    }
-                ]
-            }
-        }
+  "agent": {
+    "metrics_collection_interval": 60,
+    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/syslog",
+            "log_group_name": "cloudwebapp-me-logs",
+            "log_stream_name": "{instance_id}",
+            "timezone": "UTC"
+          }
+        ]
+      }
     }
+  }
 }
-EOF
+EOF'
 
 # Set proper permissions
 sudo chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 sudo chown root:root /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 
-# Verify the configuration file exists and is valid
-if [ ! -f /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json ]; then
-    echo "CloudWatch agent configuration file was not created successfully"
-    exit 1
-fi
 sudo apt-get remove --purge -y git
 
 
