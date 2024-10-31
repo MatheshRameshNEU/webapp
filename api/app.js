@@ -577,10 +577,14 @@ const initialize = async (app) => {
 
     //non exist method for user/self
     app.all("/v1/user/self", (req, res) => {
-      return res.status(405).send();
+      if (req.method !== 'GET') {
+        return res.status(405).json();
+      }
     });
     app.all("/v1/user/self/pic", (req, res) => {
-      return res.status(405).send();
+      if (req.method !== 'GET') {
+        return res.status(405).json();
+      }
     });
 
     // Handle 404s for unknown routes

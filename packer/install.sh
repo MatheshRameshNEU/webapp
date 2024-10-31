@@ -16,6 +16,29 @@ sudo bash -c 'cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent
     "metrics_collection_interval": 60,
     "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"
   },
+  "metrics": {
+    "metrics_collected": {
+      "cpu": {
+        "measurement": ["cpu_usage_idle", "cpu_usage_iowait", "cpu_usage_user", "cpu_usage_system"],
+        "metrics_collection_interval": 60,
+        "resources": ["*"]
+      },
+      "disk": {
+        "measurement": ["disk_read_bytes", "disk_write_bytes"],
+        "metrics_collection_interval": 60,
+        "resources": ["*"]
+      },
+      "mem": {
+        "measurement": ["mem_used_percent"],
+        "metrics_collection_interval": 60
+      },
+      "net": {
+        "measurement": ["bytes_sent", "bytes_recv"],
+        "metrics_collection_interval": 60,
+        "resources": ["*"]
+      }
+    }
+  },
   "logs": {
     "logs_collected": {
       "files": {
