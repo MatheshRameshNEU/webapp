@@ -20,12 +20,16 @@ const winston = require("winston");
 // Load env var from .env file
 dotenv.config();
 
+const logPath = process.env.NODE_ENV === 'test'
+  ? path.join(__dirname, '../logs/app_test.log')  // Temporary log for tests
+  : '/home/csye6225/app/logs/app.log';
+
 const logger = winston.createLogger({
-  level: "info",
+  level: 'info',
   format: winston.format.json(),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: "/home/csye6225/app/logs/app.log" })
+    new winston.transports.File({ filename: logPath })  // Adjust log path conditionally
   ]
 });
 
