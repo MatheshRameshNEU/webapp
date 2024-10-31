@@ -183,7 +183,7 @@ const sendEmail = async (to, subject, text) => {
 const initialize = async (app) => {
   app.use((req, res, next) => {
     if (req.method === "OPTIONS") {
-      return res.status(405).send("Method Not Allowed");
+      return res.status(405).send();
     }
     next();
   });
