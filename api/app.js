@@ -15,9 +15,25 @@ const {
 } = require("@aws-sdk/client-cloudwatch");
 const { v4: uuidv4 } = require("uuid");
 const sendGridMail = require("@sendgrid/mail");
+const winston = require("winston");
+const path = require('path');
+
 
 // Load env var from .env file
 dotenv.config();
+
+const logPath = process.env.NODE_ENV === 'test'
+  ? path.join(__dirname, '../logs/app_test.log')  // Temporary log for tests
+  : '/home/csye6225/app/logs/app.log';
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: logPath })  // Adjust log path conditionally
+  ]
+});
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -87,9 +103,9 @@ const trackAPICall = async (apiName, startTime) => {
 
   try {
     await cloudWatchClient.send(new PutMetricDataCommand(params));
-    console.log(`Metrics for ${apiName} sent to CloudWatch.`);
+    logger.info(`Metrics for ${apiName} sent to CloudWatch.`);
   } catch (error) {
-    console.error("Error sending metrics to CloudWatch:", error);
+    logger.error("Error sending metrics to CloudWatch:", error);
   }
 };
 
@@ -205,7 +221,7 @@ const initialize = async (app) => {
     // Health check endpoint
     app.all("/healthz", async (req, res) => {
       const startTime = new Date();
-      console.log("[API] Health check endpoint hit.");
+      logger.info("[API] Health check endpoint hit.");
       if (req.method !== "GET") {
         return res.status(405).send();
       }
@@ -221,7 +237,7 @@ const initialize = async (app) => {
         // Attempt to authenticate with the database
         await db.authenticate();
         res.status(200).send();
-        console.log("[API] Health check passed.");
+        logger.info("[API] Health check passed.");
       } catch (err) {
         console.error("Unable to connect to the database:");
         console.error("Error name:", err.name);
