@@ -448,7 +448,7 @@ const initialize = async (app) => {
           const dbQueryTime = new Date() - dbStartTime;
           await trackDatabaseQueryTime("FindUserProfileImage", dbQueryTime);
           if (image) {
-            return res.status(404).json();
+            return res.status(409).json();
           }
 
           const fileName = `${uuidv4()}.${fileExtension}`;
