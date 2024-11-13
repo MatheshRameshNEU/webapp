@@ -22,6 +22,9 @@ const authMiddleware = (User) => {
 
         return res.status(401).json();
       }
+      if (!user.email_verified) {
+        return res.status(403).json();
+      }
       req.user = user; 
       next(); 
     } catch (error) {

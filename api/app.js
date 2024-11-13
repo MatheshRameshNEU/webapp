@@ -253,6 +253,40 @@ const initialize = async (app) => {
       trackAPICall("HealthCheck", startTime);
     });
 
+  app.get('/verify-email', async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send('Verification token is missing.');
+  }
+
+  // Check if the token is valid and not expired (using Sequelize ORM)
+  const user = await User.findOne({
+    where: {
+      verification_token: token,
+      verification_token_expiration: {
+        [Sequelize.Op.gt]: new Date() // Check if expiration is greater than current time
+      }
+    },
+    attributes: ['id', 'email_verified', 'verification_token']
+  });
+
+  if (!user) {
+    return res.status(404).send('Invalid or expired verification token.');
+  }
+
+  // Mark email as verified
+  try {
+    await user.update({ email_verified: true });
+    res.status(200).send('Email successfully verified.');
+  } catch (error) {
+    logger.error("Error updating user verification status:", error);
+    res.status(500).send('An error occurred while verifying email.');
+  }
+});
+
+    
+
     //creating user profile
     app.post("/v1/user", async (req, res) => {
       const startTime = new Date();
