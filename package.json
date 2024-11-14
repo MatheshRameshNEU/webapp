@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-cloudwatch": "^3.679.0",
     "@aws-sdk/client-s3": "^3.679.0",
+    "@aws-sdk/client-sns": "^3.691.0",
     "@sendgrid/mail": "^8.1.4",
     "aws-sdk": "^2.1691.0",
     "bcrypt": "^5.1.1",
