@@ -47,10 +47,10 @@ describe("GET /v1/user/self", () => {
 
     const testUser = await User.create({
       email: process.env.TEST_USER_EMAIL,
-      
       password: await bcrypt.hash(process.env.TEST_USER_PASSWORD, 10),
       firstName: process.env.TEST_USER_FIRST_NAME,
       lastName: process.env.TEST_USER_LAST_NAME,
+      email_verified: true,
     });
 
     const response = await request(app)
@@ -77,6 +77,7 @@ describe("POST /v1/user", () => {
       password: process.env.NEW_USER_PASSWORD,
       firstName: process.env.NEW_USER_FIRST_NAME,
       lastName: process.env.TEST_USER_LAST_NAME,
+      email_verified: true,
     });
 
     expect(response.status).toBe(201);
@@ -107,6 +108,7 @@ describe("POST /v1/user", () => {
       password: await bcrypt.hash(process.env.NEW_USER_PASSWORD, 10),
       firstName: process.env.NEW_USER_FIRST_NAME,
       lastName: process.env.TEST_USER_LAST_NAME,
+      email_verified: true,
     });
 
     const response = await request(app).post("/v1/user").send({
