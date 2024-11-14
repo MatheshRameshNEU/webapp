@@ -130,6 +130,7 @@ describe("PUT /v1/user/self", () => {
       password: await bcrypt.hash(process.env.TEST_USER_PASSWORD, 10),
       firstName: process.env.TEST_USER_FIRST_NAME,
       lastName: process.env.TEST_USER_LAST_NAME,
+      email_verified: true,
     });
   });
 
@@ -140,7 +141,8 @@ describe("PUT /v1/user/self", () => {
       .send({
         firstName: process.env.UPDATED_USER_FIRST_NAME,
         lastName: process.env.UPDATED_USER_LAST_NAME,
-        password: process.env.UPDATED_USER_PASSWORD, // Optional update
+        password: process.env.UPDATED_USER_PASSWORD,
+        email_verified: true, // Optional update
       });
 
     expect(response.status).toBe(200);
