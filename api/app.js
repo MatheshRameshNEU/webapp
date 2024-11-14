@@ -344,14 +344,16 @@ const initialize = async (app) => {
           Message: JSON.stringify(messagePayload), // Publish payload as a JSON string
           TopicArn: snsTopicArn, // SNS Topic ARN
         };
-
+        if (process.env.NODE_ENV !== "test") {
         try {
           const snsCommand = new PublishCommand(snsParams);
           await snsClient.send(snsCommand);
           logger.info("SNS message published for new user account creation.");
         } catch (snsError) {
           logger.error("Error publishing message to SNS:", snsError);
+          return res.status(400).send(snsError);
         }
+      }
         await sendEmail(
           newUser.email,
           "Welcome to MyWebApp",
