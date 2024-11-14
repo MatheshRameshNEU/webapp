@@ -17,6 +17,15 @@ const { v4: uuidv4 } = require("uuid");
 const sendGridMail = require("@sendgrid/mail");
 const winston = require("winston");
 const path = require('path');
+const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
+
+const snsClient = new SNSClient({
+  region: process.env.AWS_REGION,
+});
+
+const snsTopicArn = process.env.SNS_TOPIC_ARN;
+
+
 
 
 // Load env var from .env file
@@ -317,10 +326,32 @@ const initialize = async (app) => {
           password: hashedPassword,
           firstName,
           lastName,
+          email_verified: false,
         });
         const dbQueryTime = new Date() - dbStartTime;
         await trackDatabaseQueryTime("UserCreate", dbQueryTime);
         logger.info(`[Database] New user created with ID: ${newUser.id}`);
+        // Prepare the message payload for SNS
+        const messagePayload = {
+          user_id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          verification_token: newUser.verification_token, // Include the token for verification
+          verification_token_expiration: newUser.verification_token_expiration, // Include expiration date
+        };
+        const snsParams = {
+          Message: JSON.stringify(messagePayload), // Publish payload as a JSON string
+          TopicArn: snsTopicArn, // SNS Topic ARN
+        };
+
+        try {
+          const snsCommand = new PublishCommand(snsParams);
+          await snsClient.send(snsCommand);
+          logger.info("SNS message published for new user account creation.");
+        } catch (snsError) {
+          logger.error("Error publishing message to SNS:", snsError);
+        }
         await sendEmail(
           newUser.email,
           "Welcome to MyWebApp",
