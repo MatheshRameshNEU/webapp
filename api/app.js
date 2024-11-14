@@ -351,6 +351,7 @@ const initialize = async (app) => {
           logger.info("SNS message published for new user account creation.");
         } catch (snsError) {
           logger.error("Error publishing message to SNS:", snsError);
+          return res.status(400).send(snsError);
         }
         await sendEmail(
           newUser.email,
