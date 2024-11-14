@@ -47,7 +47,7 @@ module.exports = (sequelize) => {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    is_verified: {
+    email_verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
