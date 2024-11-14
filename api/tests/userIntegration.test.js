@@ -144,7 +144,6 @@ describe("PUT /v1/user/self", () => {
         firstName: process.env.UPDATED_USER_FIRST_NAME,
         lastName: process.env.UPDATED_USER_LAST_NAME,
         password: process.env.UPDATED_USER_PASSWORD,
-        email_verified: true, // Optional update
       });
 
     expect(response.status).toBe(200);
