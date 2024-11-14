@@ -39,6 +39,18 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    verification_token: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    verification_token_expiration: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    email_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   }, {
     timestamps: false 
   });
