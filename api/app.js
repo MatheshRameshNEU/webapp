@@ -267,7 +267,7 @@ const initialize = async (app) => {
   const { token } = req.query;
 
   if (!token) {
-    return res.status(400).send();
+    return res.status(400).send('<h1>Verification Failed</h1>');
   }
 
   // Check if the token is valid and not expired (using Sequelize ORM)
@@ -282,13 +282,13 @@ const initialize = async (app) => {
   });
 
   if (!user) {
-    return res.status(404).send();
+    return res.status(404).send(<h1>Verification Failed</h1>);
   }
 
   // Mark email as verified
   try {
     await user.update({ email_verified: true });
-    res.status(200).send('Email successfully verified.');
+    res.status(200).send('<h1>User Verified</h1><p>Your User has been successfully verified!</p>');
   } catch (error) {
     logger.error("Error updating user verification status:", error);
     res.status(500).send('An error occurred while verifying email.');
