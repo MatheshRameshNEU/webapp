@@ -13,11 +13,12 @@ const {
   CloudWatchClient,
   PutMetricDataCommand,
 } = require("@aws-sdk/client-cloudwatch");
-const { v4: uuidv4 } = require("uuid");
 const sendGridMail = require("@sendgrid/mail");
 const winston = require("winston");
 const path = require('path');
 const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
+const { v4: uuidv4 } = require("uuid");
+const moment = require("moment");
 
 const snsClient = new SNSClient({
   region: process.env.AWS_REGION,
@@ -320,6 +321,8 @@ const initialize = async (app) => {
 
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        const verificationToken = uuidv4();
+        const verificationTokenExpiration = moment().add(2, "minutes").toISOString();
         const dbStartTime = new Date();
         const newUser = await User.create({
           email,
@@ -327,6 +330,8 @@ const initialize = async (app) => {
           firstName,
           lastName,
           email_verified: false,
+          verification_token: verificationToken,
+          verification_token_expiration: verificationTokenExpiration,
         });
         const dbQueryTime = new Date() - dbStartTime;
         await trackDatabaseQueryTime("UserCreate", dbQueryTime);
