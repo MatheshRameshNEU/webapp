@@ -282,7 +282,7 @@ const initialize = async (app) => {
   });
 
   if (!user) {
-    return res.status(404).send(<h1>Verification Failed</h1>);
+    return res.status(404).send('<h1>Verification Failed</h1>');
   }
 
   // Mark email as verified
