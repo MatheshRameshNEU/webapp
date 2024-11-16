@@ -13,7 +13,6 @@ const {
   CloudWatchClient,
   PutMetricDataCommand,
 } = require("@aws-sdk/client-cloudwatch");
-const { v4: uuidv4 } = require("uuid");
 const sendGridMail = require("@sendgrid/mail");
 const winston = require("winston");
 const path = require('path');
