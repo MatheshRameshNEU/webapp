@@ -23,7 +23,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  # Change region if needed
+          aws-region: ${{ secrets.AWS_REGION }} 
 
   
       - name: Setup `packer`
@@ -133,7 +133,7 @@ jobs:
             -var "subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
             -var "vpc_id=${{ secrets.AWS_VPC_ID }}" \
             -var "demo_acc_id=${{ secrets.AWS_DEMO_ACC_ID }}" \
-            packer/packer.pkr.hcl
+            packer/packer.pkr.hcl | tee packer-output.log
         
       - name: Extract AMI ID
         id: extract-ami
@@ -141,6 +141,13 @@ jobs:
           AMI_ID=$(grep -oP 'ami-\w+' packer-output.log | tail -1)
           echo "AMI ID: $AMI_ID"
           echo "LATEST_AMI_ID=$AMI_ID" >> $GITHUB_ENV
+
+      - name: Configure AWS Credentials (demo Account)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.DEMO_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEMO_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }} 
 
       # Step 4: Create a new Launch Template version with the AMI ID from Step 3
       - name: Create new Launch Template version
