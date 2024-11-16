@@ -156,13 +156,21 @@ jobs:
             --launch-template-name ${{ secrets.LAUNCH_TEMPLATE_NAME }} \
             --version-description "Updated with latest AMI" \
             --launch-template-data "{\"ImageId\":\"${LATEST_AMI_ID}\"}"
+      - name: Get Latest Launch Template Version
+        id: fetch-latest-version
+        run: |
+          LATEST_VERSION=$(aws ec2 describe-launch-template-versions \
+            --launch-template-name ${{ secrets.LAUNCH_TEMPLATE_NAME }} \
+            --query "sort_by(LaunchTemplateVersions[?VersionDescription=='Updated with latest AMI'], &VersionNumber)[-1].VersionNumber" \
+            --output text)
+          echo "Latest Version: $LATEST_VERSION"
 
-      # Step 5: Update Auto Scaling Group to use the latest Launch Template version
+
       - name: Update Auto Scaling Group
         run: |
           aws autoscaling update-auto-scaling-group \
             --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP_NAME }} \
-            --launch-template "{\"LaunchTemplateName\":\"${{ secrets.LAUNCH_TEMPLATE_NAME }}\",\"Version\":\"$Latest\"}"
+            --launch-template "{\"LaunchTemplateName\":\"${{ secrets.LAUNCH_TEMPLATE_NAME }}\",\"Version\":\"${LATEST_VERSION}\"}"
 
       # Step 6: Trigger Instance Refresh
       - name: Trigger Instance Refresh
