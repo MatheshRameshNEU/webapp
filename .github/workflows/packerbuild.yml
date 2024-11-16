@@ -206,11 +206,6 @@ jobs:
             
             echo "Current status: $STATUS ($PERCENTAGE% complete)"
             echo "Status reason: $STATUS_REASON"
-            STATUS=$(aws autoscaling describe-instance-refreshes \
-              --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP_NAME }} \
-              --query "InstanceRefreshes[?InstanceRefreshId=='$REFRESH_ID'].Status" \
-              --output text)
-            echo "Current status: $STATUS"
             if [ "$STATUS" == "Successful" ]; then
               echo "Instance refresh completed successfully."
               exit 0
