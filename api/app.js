@@ -266,7 +266,7 @@ const initialize = async (app) => {
   const { token } = req.query;
 
   if (!token) {
-    return res.status(400).send('Verification token is missing.');
+    return res.status(400).send();
   }
 
   // Check if the token is valid and not expired (using Sequelize ORM)
@@ -281,7 +281,7 @@ const initialize = async (app) => {
   });
 
   if (!user) {
-    return res.status(404).send('Invalid or expired verification token.');
+    return res.status(404).send();
   }
 
   // Mark email as verified
