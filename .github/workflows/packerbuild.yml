@@ -189,11 +189,23 @@ jobs:
             --preferences "{\"InstanceWarmup\":300,\"MinHealthyPercentage\":50}" \
             --query "InstanceRefreshId" --output text)
           echo "refresh_id=$REFRESH_ID" >> $GITHUB_ENV
+          echo "Refresh ID: $REFRESH_ID"
+
 
       # Step 7: Wait for Instance Refresh to Complete
       - name: Wait for Instance Refresh
         run: |
-          while true; do
+           while true; do
+            REFRESH_INFO=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP_NAME }} \
+              --instance-refresh-ids $REFRESH_ID)
+            
+            STATUS=$(echo "$REFRESH_INFO" | jq -r '.InstanceRefreshes[0].Status')
+            PERCENTAGE=$(echo "$REFRESH_INFO" | jq -r '.InstanceRefreshes[0].PercentageComplete')
+            STATUS_REASON=$(echo "$REFRESH_INFO" | jq -r '.InstanceRefreshes[0].StatusReason // "No reason provided"')
+            
+            echo "Current status: $STATUS ($PERCENTAGE% complete)"
+            echo "Status reason: $STATUS_REASON"
             STATUS=$(aws autoscaling describe-instance-refreshes \
               --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP_NAME }} \
               --query "InstanceRefreshes[?InstanceRefreshId=='$REFRESH_ID'].Status" \
@@ -207,7 +219,7 @@ jobs:
               exit 1
             fi
             sleep 30
-          done
+           done
 
 
       
