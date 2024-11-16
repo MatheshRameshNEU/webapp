@@ -324,6 +324,8 @@ const initialize = async (app) => {
         const verificationToken = uuidv4();
         const verificationTokenExpiration = moment().add(2, "minutes").toISOString();
         const dbStartTime = new Date();
+        logger.info(`tokentest: ${verificationToken}`);
+        logger.info(`tokentime: ${verificationTokenExpiration}`);
         const newUser = await User.create({
           email,
           password: hashedPassword,
@@ -335,6 +337,8 @@ const initialize = async (app) => {
         });
         const dbQueryTime = new Date() - dbStartTime;
         await trackDatabaseQueryTime("UserCreate", dbQueryTime);
+        logger.info(`newusertokentest: ${newUser.verification_token}`);
+        logger.info(`newusertokentime: ${newUser.verification_token_expiration}`);
         logger.info(`[Database] New user created with ID: ${newUser.id}`);
         // Prepare the message payload for SNS
         const messagePayload = {
