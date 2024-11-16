@@ -163,14 +163,20 @@ jobs:
             --launch-template-name ${{ secrets.LAUNCH_TEMPLATE_NAME }} \
             --query "sort_by(LaunchTemplateVersions[?VersionDescription=='Updated with latest AMI'], &VersionNumber)[-1].VersionNumber" \
             --output text)
+          echo "LATEST_VERSION=${LATEST_VERSION}" >> $GITHUB_ENV
           echo "Latest Version: $LATEST_VERSION"
+      - name: Set Default Launch Template Version
+        run: |
+          aws ec2 modify-launch-template \
+            --launch-template-name ${{ secrets.LAUNCH_TEMPLATE_NAME }} \
+            --default-version $LATEST_VERSION
 
 
       - name: Update Auto Scaling Group
         run: |
           aws autoscaling update-auto-scaling-group \
             --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP_NAME }} \
-            --launch-template "{\"LaunchTemplateName\":\"${{ secrets.LAUNCH_TEMPLATE_NAME }}\",\"Version\":\"${LATEST_VERSION}\"}"
+            --launch-template "LaunchTemplateName=${{ secrets.LAUNCH_TEMPLATE_NAME }},Version=${LATEST_VERSION}"
 
       # Step 6: Trigger Instance Refresh
       - name: Trigger Instance Refresh
