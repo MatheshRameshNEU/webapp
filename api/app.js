@@ -270,7 +270,7 @@ const initialize = async (app) => {
     return res.status(400).send('<h1>Verification Failed</h1>');
   }
 
-  // Check if the token is valid and not expired (using Sequelize ORM)
+  // Check if the token is valid and not expired
   const user = await User.findOne({
     where: {
       verification_token: token,
