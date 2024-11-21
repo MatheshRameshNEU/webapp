@@ -263,6 +263,34 @@ const initialize = async (app) => {
       trackAPICall("HealthCheck", startTime);
     });
 
+    app.all("/CICD", async (req, res) => {
+      const startTime = new Date();
+      logger.info("[API] Health check endpoint hit.");
+      if (req.method !== "GET") {
+        return res.status(405).send();
+      }
+
+      if (
+        Object.keys(req.query).length !== 0 ||
+        (req.body && Object.keys(req.body).length !== 0)
+      ) {
+        return res.status(400).send();
+      }
+
+      try {
+        // Attempt to authenticate with the database
+        await db.authenticate();
+        res.status(200).send();
+        logger.info("[API] Health check passed.");
+      } catch (err) {
+        logger.error("Unable to connect to the database:");
+        logger.error("Error name:", err.name);
+        logger.error("Error message:", err.message);
+        res.status(503).send();
+      }
+      trackAPICall("HealthCheck", startTime);
+    });
+
   app.get('/verify-email', async (req, res) => {
   const { token } = req.query;
 
