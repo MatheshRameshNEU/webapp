@@ -55,6 +55,18 @@ variable "demo_acc_id" {
   description = "Demo AWS account ID"
 }
 
+variable "demo_acc_key" {
+  type        = string
+  description = "Demo AWS account access key"
+}
+
+variable "demo_acc_sec_key" {
+  type        = string
+  description = "Demo AWS account secret access"
+}
+
+
+
 
 
 
@@ -83,6 +95,14 @@ build {
     source      = var.app_zip_path
     destination = "/tmp/app.zip"
     generated   = true
+  }
+  provisioner "shell" {
+    script = "packer/install_awscli.sh"
+    environment_vars = [
+      "AWS_ACCESS_KEY_ID=${var.demo_acc_key}",
+      "AWS_SECRET_ACCESS_KEY=${var.demo_acc_sec_key}",
+      "AWS_REGION=${var.region}"
+    ]
   }
   provisioner "shell" {
     script = "packer/install.sh"
