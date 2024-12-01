@@ -133,6 +133,8 @@ jobs:
             -var "subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
             -var "vpc_id=${{ secrets.AWS_VPC_ID }}" \
             -var "demo_acc_id=${{ secrets.AWS_DEMO_ACC_ID }}" \
+            -var "demo_acc_key=${{ secrets.DEMO_AWS_ACCESS_KEY_ID }}" \
+            -var "demo_acc_sec_key=${{ secrets.DEMO_AWS_SECRET_ACCESS_KEY }}" \
             packer/packer.pkr.hcl | tee packer-output.log
         
       - name: Extract AMI ID
