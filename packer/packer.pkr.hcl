@@ -102,7 +102,7 @@ build {
       "AWS_ACCESS_KEY_ID=${var.demo_acc_key}",
       "AWS_SECRET_ACCESS_KEY=${var.demo_acc_sec_key}",
       "AWS_REGION=${var.region}"
-    ] 
+    ]
   }
   provisioner "shell" {
     script = "packer/install.sh"
