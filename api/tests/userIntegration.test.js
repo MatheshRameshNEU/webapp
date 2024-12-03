@@ -41,7 +41,7 @@ beforeEach(async () => {
   await User.destroy({ where: {} });
 });
 
-describe("GET /v1/user/self", () => {
+describe("GET /v2/user/self", () => {
 
   it("should return 200 and user details if valid credentials are provided", async () => {
 
@@ -54,7 +54,7 @@ describe("GET /v1/user/self", () => {
     });
 
     const response = await request(app)
-      .get("/v1/user/self")
+      .get("/v2/user/self")
       .auth(process.env.TEST_USER_EMAIL, process.env.TEST_USER_PASSWORD);
 
     expect(response.status).toBe(200);
@@ -70,9 +70,9 @@ describe("GET /v1/user/self", () => {
 
 });
 
-describe("POST /v1/user", () => {
+describe("POST /v2/user", () => {
   it("should return 201 and create a new user with valid data", async () => {
-    const response = await request(app).post("/v1/user").send({
+    const response = await request(app).post("/v2/user").send({
       email: process.env.NEW_USER_EMAIL,
       password: process.env.NEW_USER_PASSWORD,
       firstName: process.env.NEW_USER_FIRST_NAME,
@@ -92,7 +92,7 @@ describe("POST /v1/user", () => {
   });
 
   it("should return 400 if any required field is missing", async () => {
-    const response = await request(app).post("/v1/user").send({
+    const response = await request(app).post("/v2/user").send({
       email: process.env.NEW_USER_EMAIL,
       password: process.env.NEW_USER_PASSWORD,
       firstName: process.env.TEST_USER_FIRST_NAME, 
@@ -111,7 +111,7 @@ describe("POST /v1/user", () => {
       email_verified: true,
     });
 
-    const response = await request(app).post("/v1/user").send({
+    const response = await request(app).post("/v2/user").send({
       email: process.env.DUPLICATE_USER_EMAIL, // Duplicate email
       password: process.env.NEW_USER_PASSWORD,
       firstName: process.env.NEW_USER_FIRST_NAME,
@@ -123,7 +123,7 @@ describe("POST /v1/user", () => {
 
 });
 
-describe("PUT /v1/user/self", () => {
+describe("PUT /v2/user/self", () => {
   let testUser;
 
   beforeEach(async () => {
@@ -138,7 +138,7 @@ describe("PUT /v1/user/self", () => {
 
   it("should return 200 and update user details with valid data", async () => {
     const response = await request(app)
-      .put("/v1/user/self")
+      .put("/v2/user/self")
       .auth(process.env.TEST_USER_EMAIL, process.env.TEST_USER_PASSWORD)
       .send({
         firstName: process.env.UPDATED_USER_FIRST_NAME,
@@ -156,7 +156,7 @@ describe("PUT /v1/user/self", () => {
     });
 
     const loginResponse = await request(app)
-      .get("/v1/user/self")
+      .get("/v2/user/self")
       .auth(process.env.TEST_USER_EMAIL, process.env.UPDATED_USER_PASSWORD);
     expect(loginResponse.status).toBe(200);
   });
@@ -164,7 +164,7 @@ describe("PUT /v1/user/self", () => {
 
   it("should return 400 if trying to update email", async () => {
     const response = await request(app)
-      .put("/v1/user/self")
+      .put("/v2/user/self")
       .auth(process.env.TEST_USER_EMAIL, process.env.TEST_USER_PASSWORD)
       .send({
         email: "newemail@example.com", // Attempting to change the email
