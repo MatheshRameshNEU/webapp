@@ -262,6 +262,7 @@ const initialize = async (app) => {
       }
       trackAPICall("HealthCheck", startTime);
     });
+    
 
   app.get('/verify-email', async (req, res) => {
   const { token } = req.query;
@@ -298,7 +299,7 @@ const initialize = async (app) => {
     
 
     //creating user profile
-    app.post("/v1/user", async (req, res) => {
+    app.post("/v2/user", async (req, res) => {
       const startTime = new Date();
       logger.info("[API] Creating a new user profile.");
       const { email, password, firstName, lastName } = req.body;
@@ -391,7 +392,7 @@ const initialize = async (app) => {
       }
     });
     // updating user profile
-    app.put("/v1/user/self", authMiddleware, async (req, res) => {
+    app.put("/v2/user/self", authMiddleware, async (req, res) => {
       const startTime = new Date();
       logger.info("[API] Updating user profile.");
       if (Object.keys(req.query).length !== 0) {
@@ -455,7 +456,7 @@ const initialize = async (app) => {
     });
 
     // geeting user profile
-    app.get("/v1/user/self", authMiddleware, async (req, res) => {
+    app.get("/v2/user/self", authMiddleware, async (req, res) => {
       const startTime = new Date();
       logger.info("[API] Fetching user profile.");
 
@@ -488,7 +489,7 @@ const initialize = async (app) => {
 
     const upload = multer({ storage: multer.memoryStorage() });
     app.post(
-      "/v1/user/self/pic",
+      "/v2/user/self/pic",
       authMiddleware,
       upload.single("profilePic"),
       async (req, res) => {
@@ -583,7 +584,7 @@ const initialize = async (app) => {
     );
 
     // Get the profile picture of the authenticated user
-    app.get("/v1/user/self/pic", authMiddleware, async (req, res) => {
+    app.get("/v2/user/self/pic", authMiddleware, async (req, res) => {
       logger.info("[API] Fetching  profile pic.");
       const startTime = new Date();
       if (req.method !== "GET") {
@@ -624,7 +625,7 @@ const initialize = async (app) => {
       }
     });
     // Delete the profile picture of the authenticated user
-    app.delete("/v1/user/self/pic", authMiddleware, async (req, res) => {
+    app.delete("/v2/user/self/pic", authMiddleware, async (req, res) => {
       const startTime = new Date();
       logger.info("[API] Deleting user profile pic.");
       try {
@@ -672,12 +673,12 @@ const initialize = async (app) => {
     });
 
     //non exist method for user/self
-    app.all("/v1/user/self", (req, res) => {
+    app.all("/v2/user/self", (req, res) => {
       if (req.method !== 'GET') {
         return res.status(405).json();
       }
     });
-    app.all("/v1/user/self/pic", (req, res) => {
+    app.all("/v2/user/self/pic", (req, res) => {
       if (req.method !== 'GET') {
         return res.status(405).json();
       }
